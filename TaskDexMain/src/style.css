@@ -1,13 +1,14 @@
 /* Base styles - Tailwind CSS handles most styling */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jersey+15&display=swap');
 
 :root {
   font-family: 'Times New Roman', serif;
   line-height: 1.6;
   font-weight: 400;
-  color-scheme: light;
-  color: #000000;
-  background-color: #f5f5dc; /* beige */
+  color-scheme: dark;
+  color: #e5e5e5;
+  background-color: #1a1a1a; /* dark background */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   image-rendering: pixelated;
@@ -24,11 +25,14 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-family: 'Times New Roman', serif;
+  background-color: #1a1a1a;
+  color: #e5e5e5;
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
+  background-color: #1a1a1a;
 }
 
 /* Pixelated image rendering for sprites */
@@ -38,16 +42,62 @@ img[style*="imageRendering"] {
   image-rendering: crisp-edges;
 }
 
-/* Pixelated font class for headings */
+/* Jersey 15 font class for headings */
 .font-pixel {
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Jersey 15', 'Press Start 2P', monospace;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: auto;
+  letter-spacing: 0.05em;
 }
 
-/* All headings use pixelated font */
+/* All headings use Jersey 15 font */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Jersey 15', 'Press Start 2P', monospace;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: auto;
+  letter-spacing: 0.05em;
+}
+
+/* Smooth animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
 }

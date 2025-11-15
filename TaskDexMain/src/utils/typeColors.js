@@ -1,14 +1,14 @@
 // Type-based color utilities
 export const getTypeHoverColor = (type) => {
   const colors = {
-    'Grass': 'hover:bg-green-600 hover:ring-green-500',
-    'Fire': 'hover:bg-red-600 hover:ring-red-500',
-    'Water': 'hover:bg-blue-600 hover:ring-blue-500',
-    'Psychic': 'hover:bg-pink-300 hover:ring-pink-400', // Baby pink
-    'Ghost': 'hover:bg-blue-900 hover:ring-blue-800', // Navy blue
-    'Electric': 'hover:bg-yellow-500 hover:ring-yellow-400',
+    'Grass': 'hover:bg-green-400 hover:ring-green-300', // Lighter green
+    'Fire': 'hover:bg-red-400 hover:ring-red-300', // Lighter red
+    'Water': 'hover:bg-blue-400 hover:ring-blue-300', // Lighter blue
+    'Psychic': 'hover:bg-pink-300 hover:ring-pink-400', // Baby pink - correct as is
+    'Ghost': 'hover:bg-blue-600 hover:ring-blue-500', // Lighter navy blue
+    'Electric': 'hover:bg-yellow-300 hover:ring-yellow-200', // Lighter yellow
   };
-  return colors[type] || 'hover:bg-gray-600 hover:ring-gray-500';
+  return colors[type] || 'hover:bg-gray-500 hover:ring-gray-400';
 };
 
 export const getTypeRingColor = (type) => {
@@ -37,13 +37,13 @@ export const getTypeBorderColor = (type) => {
 
 export const getTypeBgColor = (type) => {
   const colors = {
-    'Grass': 'bg-green-100',
-    'Fire': 'bg-red-100',
-    'Water': 'bg-blue-100',
-    'Psychic': 'bg-pink-100',
-    'Ghost': 'bg-blue-50',
-    'Electric': 'bg-yellow-100',
+    'Grass': 'bg-green-900/30',
+    'Fire': 'bg-red-900/30',
+    'Water': 'bg-blue-900/30',
+    'Psychic': 'bg-pink-900/30',
+    'Ghost': 'bg-blue-950/30',
+    'Electric': 'bg-yellow-900/30',
   };
-  return colors[type] || 'bg-gray-100';
+  return colors[type] || 'bg-gray-800/30';
 };
 

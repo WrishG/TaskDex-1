@@ -25,52 +25,53 @@ export default function TopNavigationBar({ setScreen, userData, currentScreen })
   }
 
   return (
-    <nav className="bg-white border-b-2 border-gray-300 shadow-md sticky top-0 z-40">
+    <nav className="bg-gray-900 border-b-2 border-gray-700 shadow-xl sticky top-0 z-40 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Left side - Logo/Title */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xl">T</span>
+          <div className="flex items-center space-x-3 animate-slideIn">
+            <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300 animate-glow">
+              <span className="text-white font-bold text-2xl">T</span>
             </div>
-            <span className="text-xl font-bold text-black">TaskMon</span>
+            <span className="text-2xl font-bold text-white">TaskMon</span>
           </div>
 
           {/* Center - Navigation Items */}
-          <div className="flex items-center space-x-2">
-            {navItems.map((item) => (
+          <div className="flex items-center space-x-3">
+            {navItems.map((item, index) => (
               <button
                 key={item.screen}
                 onClick={() => setScreen(item.screen)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center space-x-2 ${
+                className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 transform hover:scale-105 ${
                   currentScreen === item.screen
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-100 text-black hover:bg-gray-200'
+                    ? 'bg-red-600 text-white shadow-lg ring-2 ring-red-400'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-xl">{item.icon}</span>
                 <span className="text-sm">{item.name}</span>
               </button>
             ))}
           </div>
 
           {/* Right side - Trainer and Partner Sprites */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {/* Trainer Profile Icon */}
             <div 
-              className="relative cursor-pointer p-1 bg-white rounded-full border-2 border-red-600 hover:bg-red-100 transition-all shadow-lg"
+              className="relative cursor-pointer p-2 bg-gray-800 rounded-full border-2 border-red-600 hover:bg-gray-700 transition-all shadow-xl hover:scale-110 transform duration-300"
               onClick={() => setScreen('PARTNER_SELECT_SCREEN')}
             >
               <img 
                 src={getGifUrl(trainerSprite)} 
                 alt="Profile"
-                style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }}
+                style={{ width: '56px', height: '56px', imageRendering: 'pixelated' }}
                 onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
                 className="rounded-full"
               />
               {/* Evolution notification */}
               {isReadyToEvolve && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs animate-pulse border-2 border-white">
+                <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs animate-pulse border-2 border-white shadow-lg">
                   !
                 </span>
               )}
@@ -79,13 +80,13 @@ export default function TopNavigationBar({ setScreen, userData, currentScreen })
             {/* Partner Sprite with Type-Colored Circle */}
             {partner && (
               <div 
-                className={`rounded-full p-1 border-2 ${getTypeBorderColor(partner.type)} cursor-pointer hover:scale-110 transition-transform`}
+                className={`rounded-full p-2 border-4 ${getTypeBorderColor(partner.type)} cursor-pointer hover:scale-110 transition-all duration-300 shadow-xl transform`}
                 onClick={() => setScreen('PARTNER_SELECT_SCREEN')}
               >
                 <img 
                   src={getGifUrl(partner.currentName)} 
                   alt="Partner" 
-                  style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }}
+                  style={{ width: '56px', height: '56px', imageRendering: 'pixelated' }}
                   onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
                   className="rounded-full"
                 />

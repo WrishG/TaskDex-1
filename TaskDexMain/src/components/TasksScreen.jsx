@@ -3,11 +3,11 @@ import { POKEMON_DATA } from '../data/pokemonData.js';
 import { getTypeHoverColor, getTypeBorderColor, getTypeBgColor, getTypeRingColor } from '../utils/typeColors.js';
 
 const style = {
-  card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
-  button: "px-6 py-3 rounded-xl font-bold transition-colors duration-300 shadow-md",
+  card: "bg-gray-800 p-8 rounded-2xl shadow-2xl border-2 border-gray-700",
+  button: "px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg transform hover:scale-105",
   primaryButton: "bg-red-600 text-white hover:bg-red-700",
-  secondaryButton: "bg-gray-600 text-white hover:bg-gray-700",
-  input: "w-full p-3 rounded-lg bg-white border-2 border-gray-300 text-black focus:border-red-500 focus:ring-2 focus:ring-red-500",
+  secondaryButton: "bg-gray-700 text-white hover:bg-gray-600",
+  input: "w-full p-3 rounded-lg bg-gray-900 border-2 border-gray-600 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500",
 };
 
 export default function TasksScreen({ setScreen, userData, tasks, setTasks, setSessionConfig }) {
@@ -88,21 +88,21 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
   const firstPokemon = userData?.pokemon_inventory.find(p => p.isPartner)?.currentName || 'N/A';
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-[#f5f5dc] text-black">
-      <div className={style.card + " max-w-4xl w-full mt-8"}>
+    <div className="flex flex-col items-center min-h-screen p-4 bg-[#1a1a1a] text-white animate-fadeIn">
+      <div className={style.card + " max-w-5xl w-full mt-8"}>
         {/* Welcome Message - Shows once after login */}
         {showWelcome && (
-          <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl">
+          <div className="mb-6 p-5 bg-red-900/30 border-2 border-red-600 rounded-xl animate-slideIn">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-2xl font-bold text-black mb-1">Welcome Back, {trainerName}!</h3>
-                <p className="text-gray-700">
-                  Your partner, <span className="font-semibold text-green-600">{firstPokemon}</span>, is ready to help you focus.
+                <h3 className="text-2xl font-bold text-white mb-1">Welcome Back, {trainerName}!</h3>
+                <p className="text-gray-300">
+                  Your partner, <span className="font-semibold text-green-400">{firstPokemon}</span>, is ready to help you focus.
                 </p>
               </div>
               <button
                 onClick={handleDismissWelcome}
-                className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                className="text-gray-400 hover:text-white text-xl font-bold transition-colors duration-200"
               >
                 ×
               </button>
@@ -110,8 +110,8 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
           </div>
         )}
         
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-4xl font-bold text-black">My Tasks</h2>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-5xl font-bold text-white">My Tasks</h2>
           <button
             className={style.button + " " + style.primaryButton + " text-lg px-8 py-4"}
             onClick={() => setShowAddTask(true)}
@@ -121,13 +121,13 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
         </div>
 
         {/* Tasks List */}
-        <div className="space-y-4">
+        <div className="space-y-5">
           {(!tasks || tasks.length === 0) ? (
-            <div className="text-center py-12 bg-gray-100 rounded-lg border-2 border-gray-300">
-              <p className="text-gray-600 text-lg">No tasks yet. Click "Add Task" to create your first task!</p>
+            <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-gray-700">
+              <p className="text-gray-300 text-lg">No tasks yet. Click "Add Task" to create your first task!</p>
             </div>
           ) : (
-            tasks.map(task => {
+            tasks.map((task, index) => {
               const typeHoverClass = getTypeHoverColor(task.type);
               const typeBorderClass = getTypeBorderColor(task.type);
               const typeBgClass = getTypeBgColor(task.type);
@@ -136,8 +136,9 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
               return (
                 <div
                   key={task.id}
-                  className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 ${typeBorderClass} bg-white ${typeHoverClass} hover:ring-4 ${typeRingClass} hover:shadow-xl`}
+                  className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform hover:scale-105 ${typeBorderClass} bg-gray-900 ${typeHoverClass} hover:ring-4 ${typeRingClass} hover:shadow-2xl`}
                   onClick={() => setSelectedTask(task)}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -145,10 +146,10 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
                         <span className={`px-3 py-1 rounded-lg text-sm font-bold ${getTypeButtonColor(task.type)}`}>
                           {task.type}
                         </span>
-                        <h3 className="text-2xl font-bold text-black">{task.name}</h3>
+                        <h3 className="text-2xl font-bold text-white">{task.name}</h3>
                       </div>
                       {task.description && (
-                        <p className="text-gray-700 mt-2">{task.description}</p>
+                        <p className="text-gray-300 mt-2">{task.description}</p>
                       )}
                     </div>
                   </div>
@@ -161,13 +162,13 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
       {/* Add Task Modal */}
       {showAddTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl max-w-lg w-full mx-4 border-2 border-gray-300">
-            <h3 className="text-3xl font-bold mb-6 text-black">Add New Task</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-gray-800 p-8 rounded-2xl max-w-lg w-full mx-4 border-2 border-gray-700 shadow-2xl">
+            <h3 className="text-3xl font-bold mb-6 text-white">Add New Task</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Task Name:</label>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Task Name:</label>
                 <input
                   type="text"
                   value={taskName}
@@ -178,15 +179,15 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Task Type:</label>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Task Type:</label>
                 <div className="grid grid-cols-3 gap-2">
                   {POKEMON_DATA.SESSION_TYPES.map(type => (
                     <button
                       key={type}
-                      className={`py-3 rounded-lg font-bold transition-all duration-200 border-2 ${
+                      className={`py-3 rounded-lg font-bold transition-all duration-200 border-2 transform hover:scale-105 ${
                         taskType === type
-                          ? `${getTypeButtonColor(type)} border-black shadow-lg scale-105`
-                          : 'bg-gray-100 hover:bg-gray-200 text-black border-gray-300'
+                          ? `${getTypeButtonColor(type)} border-white shadow-lg scale-105`
+                          : 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600'
                       }`}
                       onClick={() => setTaskType(type)}
                     >
@@ -197,7 +198,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Description:</label>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Description:</label>
                 <textarea
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
@@ -234,16 +235,16 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
       {/* Start Task Modal */}
       {selectedTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl max-w-md w-full mx-4 border-2 border-gray-300 text-center">
-            <h3 className="text-3xl font-bold mb-4 text-black">{selectedTask.name}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-gray-800 p-8 rounded-2xl max-w-md w-full mx-4 border-2 border-gray-700 text-center shadow-2xl">
+            <h3 className="text-3xl font-bold mb-4 text-white">{selectedTask.name}</h3>
             <div className="mb-4">
               <span className={`px-4 py-2 rounded-lg text-sm font-bold ${getTypeButtonColor(selectedTask.type)}`}>
                 {selectedTask.type}
               </span>
             </div>
             {selectedTask.description && (
-              <p className="text-gray-700 mb-6">{selectedTask.description}</p>
+              <p className="text-gray-300 mb-6">{selectedTask.description}</p>
             )}
             <div className="flex space-x-4">
               <button
