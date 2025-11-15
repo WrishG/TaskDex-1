@@ -30,7 +30,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
   const [encounters, setEncounters] = React.useState([]);
   const [expGained, setExpGained] = React.useState(0);
   const [selectedMonIds, setSelectedMonIds] = React.useState([]);
-  const [caughtMonIds, setCaughtMonIds] = React.useState([]);
+  const [caughtMonIds, setCaughtMonIds] =React.useState([]);
   const [isSaving, setIsSaving] = React.useState(false);
   
   const timerRef = React.useRef(null);
@@ -82,40 +82,42 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
             timerRef.current = null;
           }
           
-          setTimeout(() => {
-            const currentPhase = isWorkPhaseRef.current;
-            const currentSessionNum = currentSessionRef.current;
+          // --- BUG FIX: Removed setTimeout(..., 0) wrapper ---
+          // The logic now runs immediately, preventing state inconsistencies.
+          
+          const currentPhase = isWorkPhaseRef.current;
+          const currentSessionNum = currentSessionRef.current;
+          
+          if (currentPhase) {
+            // Work phase completed - show encounter screen
+            const { encounters: newEncounters, expGain } = calculateEncounters(workDuration, sessionType);
+            setEncounters(newEncounters);
+            setExpGained(expGain);
+            setSelectedMonIds([]);
+            setCaughtMonIds([]);
+            setShowEncounterScreen(true);
+            setIsRunning(false);
             
-            if (currentPhase) {
-              // Work phase completed - show encounter screen
-              const { encounters: newEncounters, expGain } = calculateEncounters(workDuration, sessionType);
-              setEncounters(newEncounters);
-              setExpGained(expGain);
-              setSelectedMonIds([]);
-              setCaughtMonIds([]);
-              setShowEncounterScreen(true);
-              setIsRunning(false);
-              
-              // Update EXP
-              if (handleSessionComplete) {
-                handleSessionComplete(workDuration, sessionType, true);
-              }
-            } else {
-              // Break phase completed - move to next session
-              if (currentSessionNum < numSessions) {
-                setCompletedSessions(prev => prev + 1);
-                setCurrentSession(prev => prev + 1);
-                setIsWorkPhase(true);
-                setTimeLeft(workDuration * 60);
-                setTimerKey(prev => prev + 1);
-                setIsRunning(true);
-              } else {
-                // All sessions complete
-                setCompletedSessions(prev => prev + 1);
-                setScreen('MAIN_MENU');
-              }
+            // Update EXP
+            if (handleSessionComplete) {
+              handleSessionComplete(workDuration, sessionType, true);
             }
-          }, 0);
+          } else {
+            // Break phase completed - move to next session
+            if (currentSessionNum < numSessions) {
+              setCompletedSessions(prev => prev + 1);
+              setCurrentSession(prev => prev + 1);
+              setIsWorkPhase(true);
+              setTimeLeft(workDuration * 60);
+              setTimerKey(prev => prev + 1);
+              setIsRunning(true);
+            } else {
+              // All sessions complete
+              setCompletedSessions(prev => prev + 1);
+              setScreen('TASKS_SCREEN'); // Go back to tasks screen, or MAIN_MENU
+            }
+          }
+          // --- END OF BUG FIX ---
           
           return 0;
         }
@@ -129,7 +131,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         timerRef.current = null;
       }
     };
-  }, [isRunning, isWorkPhase, timerKey, numSessions, workDuration, breakDuration, sessionType, calculateEncounters, handleSessionComplete, setScreen, showEncounterScreen]);
+  }, [isRunning, isWorkPhase, timerKey, numSessions, workDuration, breakDuration, sessionType, calculateEncounters, handleSessionComplete, setScreen]);
   
   const handleEndSession = () => {
     if (timerRef.current) {
@@ -155,7 +157,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
       }
     } else {
       // Ending during break: go back to menu
-      setScreen('MAIN_MENU');
+      setScreen('TASKS_SCREEN'); // Go back to tasks screen
     }
   };
   
@@ -194,7 +196,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         setTimerKey(prev => prev + 1);
         setIsRunning(true);
       } else {
-        setScreen('MAIN_MENU');
+        setScreen('TASKS_SCREEN'); // All sessions done, go to tasks
       }
     }
   };
