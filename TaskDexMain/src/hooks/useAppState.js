@@ -270,7 +270,7 @@ export function useAppState() {
   }, [user, userData, db]);
 
   // Set Partner Function
-  const handleSetNewPartner = useCallback(async (newPartnerInstanceId) => {
+  const handleSetNewPartner = useCallback(async (newPartnerInstanceId, options = {}) => {
     if (!user || !db || !userData) return;
 
     const newInventory = userData.pokemon_inventory.map(pokemon => {
@@ -287,7 +287,10 @@ export function useAppState() {
       await updateDoc(userDocRef, {
         pokemon_inventory: newInventory
       });
-      setScreen('MAIN_MENU'); // Go back to main menu after selection
+      // Navigate back to main menu by default; allow caller to skip navigation
+      if (!options.skipNavigation) {
+        setScreen('MAIN_MENU'); // Go back to main menu after selection
+      }
     } catch (error) {
       console.error("Error setting new partner:", error);
     }
