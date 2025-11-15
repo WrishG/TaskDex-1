@@ -6,11 +6,11 @@ import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { app, db } from '../config/firebase.js';
 
 const style = {
-  card: "bg-gray-800 p-8 rounded-2xl shadow-2xl border-2 border-gray-700",
+  card: "bg-white p-8 rounded-2xl shadow-2xl border-2 border-black",
   button: "px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg transform hover:scale-105",
-  primaryButton: "bg-red-600 text-white hover:bg-red-700",
-  secondaryButton: "bg-gray-700 text-white hover:bg-gray-600",
-  input: "w-full p-3 rounded-lg bg-gray-900 border-2 border-gray-600 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500",
+  primaryButton: "bg-black text-white hover:bg-gray-800",
+  secondaryButton: "bg-gray-800 text-white hover:bg-gray-900",
+  input: "w-full p-3 rounded-lg bg-white border-2 border-black text-black focus:border-red-500 focus:ring-2 focus:ring-red-500",
 };
 
 export default function FriendsListScreen({ setScreen, userData }) {
@@ -94,16 +94,16 @@ export default function FriendsListScreen({ setScreen, userData }) {
   };
   
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-[#1a1a1a] text-white animate-fadeIn">
+    <div className="flex flex-col items-center min-h-screen p-4 bg-white text-black animate-fadeIn">
       <div className={style.card + " max-w-5xl w-full mt-12"}>
-        <h2 className="text-5xl font-bold mb-6 text-white">Friends List & Multiplayer Hub</h2>
+        <h2 className="text-5xl font-bold mb-6 text-black">Friends List & Multiplayer Hub</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Column 1: My ID & Copy ID */}
           <div className="md:col-span-1 space-y-4">
-            <div className="p-5 bg-gray-900 rounded-xl border-2 border-gray-700 shadow-xl">
-              <h3 className="text-xl font-semibold mb-3 text-white">Your Trainer ID</h3>
-              <p className="font-mono text-sm break-all text-yellow-400 mb-4 select-all">
+            <div className="p-5 bg-gray-100 rounded-xl border-2 border-black shadow-xl">
+              <h3 className="text-xl font-semibold mb-3 text-black">Your Trainer ID</h3>
+              <p className="font-mono text-sm break-all text-yellow-600 mb-4 select-all">
                 {currentUserId || `local-user-${userData?.trainerName || 'trainer'}`}
               </p>
               <button 
@@ -128,8 +128,8 @@ export default function FriendsListScreen({ setScreen, userData }) {
               </button>
             </div>
             
-            <div className="p-5 bg-gray-900 rounded-xl border-2 border-gray-700 shadow-xl">
-              <h3 className="text-xl font-semibold mb-3 text-white">Add Friend</h3>
+            <div className="p-5 bg-gray-100 rounded-xl border-2 border-black shadow-xl">
+              <h3 className="text-xl font-semibold mb-3 text-black">Add Friend</h3>
               <input
                 type="text"
                 value={friendIdInput}
@@ -143,21 +143,21 @@ export default function FriendsListScreen({ setScreen, userData }) {
               >
                 Send Friendship Request
               </button>
-              {message && <p className={`mt-2 text-sm ${message.startsWith('Error') ? 'text-red-400' : 'text-green-400'}`}>{message}</p>}
+              {message && <p className={`mt-2 text-sm ${message.startsWith('Error') ? 'text-red-600' : 'text-green-600'}`}>{message}</p>}
             </div>
           </div>
           
           {/* Column 2 & 3: Friend List */}
           <div className="md:col-span-2 space-y-4">
-            <h3 className="text-3xl font-semibold text-white">Your Friends ({userData?.friends?.length || 0})</h3>
+            <h3 className="text-3xl font-semibold text-black">Your Friends ({userData?.friends?.length || 0})</h3>
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {loadingFriends ? (
-                <p className="text-gray-300">Loading friends data...</p>
+                <p className="text-gray-700">Loading friends data...</p>
               ) : friendsDetail.length === 0 ? (
-                <p className="text-gray-300 p-4 bg-gray-900 rounded-xl border-2 border-gray-700">You haven't added any friends yet. Share your ID!</p>
+                <p className="text-gray-700 p-4 bg-gray-100 rounded-xl border-2 border-black">You haven't added any friends yet. Share your ID!</p>
               ) : (
                 friendsDetail.map(friend => (
-                  <div key={friend.id} className="flex items-center p-4 bg-gray-900 rounded-xl shadow-lg justify-between border-2 border-gray-700 hover:border-gray-600 transition-all duration-300 transform hover:scale-105">
+                  <div key={friend.id} className="flex items-center p-4 bg-gray-100 rounded-xl shadow-lg justify-between border-2 border-black hover:border-gray-600 transition-all duration-300 transform hover:scale-105">
                     <div className="flex items-center space-x-4">
                       <img 
                         src={getGifUrl(friend.trainerGender === 'female' ? 'TrainerFemale' : 'TrainerMale')} 
@@ -167,13 +167,13 @@ export default function FriendsListScreen({ setScreen, userData }) {
                         className="rounded-full"
                       />
                       <div>
-                        <p className="font-semibold text-lg text-white">{friend.trainerName}</p>
-                        <p className="text-xs font-mono text-gray-400 break-all">{friend.id}</p>
+                        <p className="font-semibold text-lg text-black">{friend.trainerName}</p>
+                        <p className="text-xs font-mono text-gray-600 break-all">{friend.id}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-green-400">Partner: {friend.partnerName}</p>
-                      <p className="text-xs text-gray-400">Status: Active</p>
+                      <p className="text-sm text-green-600">Partner: {friend.partnerName}</p>
+                      <p className="text-xs text-gray-600">Status: Active</p>
                     </div>
                   </div>
                 ))
@@ -181,7 +181,7 @@ export default function FriendsListScreen({ setScreen, userData }) {
             </div>
             
             <button 
-              className={style.button + " bg-red-600 text-white hover:bg-red-700 w-full"}
+              className={style.button + " bg-black text-white hover:bg-gray-800 w-full"}
               onClick={() => setScreen('GROUP_LOBBY')}
             >
               Start/Join Group Session

@@ -3,12 +3,98 @@ import { POKEMON_DATA } from '../data/pokemonData.js';
 import { getTypeHoverColor, getTypeBorderColor, getTypeBgColor, getTypeRingColor } from '../utils/typeColors.js';
 
 const style = {
-  card: "bg-gray-800 p-8 rounded-2xl shadow-2xl border-2 border-gray-700",
+  card: "bg-white p-8 rounded-2xl shadow-2xl border-2 border-black",
   button: "px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg transform hover:scale-105",
-  primaryButton: "bg-red-600 text-white hover:bg-red-700",
-  secondaryButton: "bg-gray-700 text-white hover:bg-gray-600",
-  input: "w-full p-3 rounded-lg bg-gray-900 border-2 border-gray-600 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500",
+  primaryButton: "bg-black text-white hover:bg-gray-800",
+  secondaryButton: "bg-gray-800 text-white hover:bg-gray-900",
+  input: "w-full p-3 rounded-lg bg-white border-2 border-black text-black focus:border-red-500 focus:ring-2 focus:ring-red-500",
 };
+
+// Task Start Modal Component
+function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor }) {
+  const [workDuration, setWorkDuration] = React.useState(30);
+  const [breakDuration, setBreakDuration] = React.useState(5);
+  const [numSessions, setNumSessions] = React.useState(4);
+
+  const handleStart = () => {
+    if (workDuration >= 20 && breakDuration >= 1 && numSessions >= 1) {
+      onStart(workDuration, breakDuration, numSessions);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 animate-fadeIn">
+      <div className="bg-white p-8 rounded-2xl max-w-md w-full mx-4 border-2 border-black shadow-2xl">
+        <h3 className="text-3xl font-bold mb-4 text-black text-center">{task.name}</h3>
+        <div className="mb-4 text-center">
+          <span className={`px-4 py-2 rounded-lg text-sm font-bold ${getTypeButtonColor(task.type)}`}>
+            {task.type}
+          </span>
+        </div>
+        {task.description && (
+          <p className="text-gray-700 mb-6 text-center">{task.description}</p>
+        )}
+        
+        <div className="space-y-4 mb-6">
+          <div>
+            <label className="block text-sm font-semibold text-black mb-2">
+              Work Duration (minutes) - Minimum 20:
+            </label>
+            <input
+              type="number"
+              value={workDuration}
+              onChange={(e) => setWorkDuration(Math.max(20, parseInt(e.target.value) || 20))}
+              className={style.input}
+              min="20"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-semibold text-black mb-2">
+              Break Duration (minutes) - Minimum 1:
+            </label>
+            <input
+              type="number"
+              value={breakDuration}
+              onChange={(e) => setBreakDuration(Math.max(1, parseInt(e.target.value) || 1))}
+              className={style.input}
+              min="1"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-semibold text-black mb-2">
+              Number of Sessions - Minimum 1:
+            </label>
+            <input
+              type="number"
+              value={numSessions}
+              onChange={(e) => setNumSessions(Math.max(1, parseInt(e.target.value) || 1))}
+              className={style.input}
+              min="1"
+            />
+          </div>
+        </div>
+        
+        <div className="flex space-x-4">
+          <button
+            className={style.button + " " + style.primaryButton + " flex-1"}
+            onClick={handleStart}
+            disabled={workDuration < 20 || breakDuration < 1 || numSessions < 1}
+          >
+            Start Task
+          </button>
+          <button
+            className={style.button + " " + style.secondaryButton + " flex-1"}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function TasksScreen({ setScreen, userData, tasks, setTasks, setSessionConfig }) {
   const [showAddTask, setShowAddTask] = React.useState(false);
@@ -23,17 +109,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
     return !hasSeenWelcome;
   });
   
-  // Hide welcome message after 5 seconds or when user dismisses it
-  React.useEffect(() => {
-    if (showWelcome) {
-      const timer = setTimeout(() => {
-        setShowWelcome(false);
-        sessionStorage.setItem('hasSeenWelcome', 'true');
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showWelcome]);
-  
+  // Welcome message stays until user dismisses it
   const handleDismissWelcome = () => {
     setShowWelcome(false);
     sessionStorage.setItem('hasSeenWelcome', 'true');
@@ -61,12 +137,14 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
     setShowAddTask(false);
   };
 
-  const handleStartTask = (task) => {
+  const handleStartTask = (task, workDuration, breakDuration, numSessions) => {
     setSessionConfig({ 
       type: task.type, 
-      studyTime: 30, 
-      restTime: 5,
-      taskId: task.id 
+      studyTime: workDuration, 
+      restTime: breakDuration,
+      taskId: task.id,
+      taskName: task.name,
+      numSessions: numSessions
     });
     setSelectedTask(null);
     setScreen('POMODORO_RUNNING');
@@ -88,21 +166,21 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
   const firstPokemon = userData?.pokemon_inventory.find(p => p.isPartner)?.currentName || 'N/A';
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-[#1a1a1a] text-white animate-fadeIn">
+    <div className="flex flex-col items-center min-h-screen p-4 bg-white text-black animate-fadeIn">
       <div className={style.card + " max-w-5xl w-full mt-8"}>
         {/* Welcome Message - Shows once after login */}
         {showWelcome && (
-          <div className="mb-6 p-5 bg-red-900/30 border-2 border-red-600 rounded-xl animate-slideIn">
+          <div className="mb-6 p-5 bg-red-50 border-2 border-red-600 rounded-xl animate-slideIn">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-2xl font-bold text-white mb-1">Welcome Back, {trainerName}!</h3>
-                <p className="text-gray-300">
-                  Your partner, <span className="font-semibold text-green-400">{firstPokemon}</span>, is ready to help you focus.
+                <h3 className="text-2xl font-bold text-black mb-1">Welcome Back, {trainerName}!</h3>
+                <p className="text-gray-700">
+                  Your partner, <span className="font-semibold text-green-600">{firstPokemon}</span>, is ready to help you focus.
                 </p>
               </div>
               <button
                 onClick={handleDismissWelcome}
-                className="text-gray-400 hover:text-white text-xl font-bold transition-colors duration-200"
+                className="text-gray-600 hover:text-black text-xl font-bold transition-colors duration-200"
               >
                 ×
               </button>
@@ -111,7 +189,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
         )}
         
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-5xl font-bold text-white">My Tasks</h2>
+          <h2 className="text-5xl font-bold text-black">My Tasks</h2>
           <button
             className={style.button + " " + style.primaryButton + " text-lg px-8 py-4"}
             onClick={() => setShowAddTask(true)}
@@ -123,8 +201,8 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
         {/* Tasks List */}
         <div className="space-y-5">
           {(!tasks || tasks.length === 0) ? (
-            <div className="text-center py-12 bg-gray-900 rounded-xl border-2 border-gray-700">
-              <p className="text-gray-300 text-lg">No tasks yet. Click "Add Task" to create your first task!</p>
+            <div className="text-center py-12 bg-gray-100 rounded-xl border-2 border-black">
+              <p className="text-gray-700 text-lg">No tasks yet. Click "Add Task" to create your first task!</p>
             </div>
           ) : (
             tasks.map((task, index) => {
@@ -136,7 +214,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
               return (
                 <div
                   key={task.id}
-                  className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform hover:scale-105 ${typeBorderClass} bg-gray-900 ${typeHoverClass} hover:ring-4 ${typeRingClass} hover:shadow-2xl`}
+                  className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform hover:scale-105 ${typeBorderClass} bg-white ${typeHoverClass} hover:ring-4 ${typeRingClass} hover:shadow-2xl`}
                   onClick={() => setSelectedTask(task)}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
@@ -146,10 +224,10 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
                         <span className={`px-3 py-1 rounded-lg text-sm font-bold ${getTypeButtonColor(task.type)}`}>
                           {task.type}
                         </span>
-                        <h3 className="text-2xl font-bold text-white">{task.name}</h3>
+                        <h3 className="text-2xl font-bold text-black">{task.name}</h3>
                       </div>
                       {task.description && (
-                        <p className="text-gray-300 mt-2">{task.description}</p>
+                        <p className="text-gray-700 mt-2">{task.description}</p>
                       )}
                     </div>
                   </div>
@@ -163,12 +241,12 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
       {/* Add Task Modal */}
       {showAddTask && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-gray-800 p-8 rounded-2xl max-w-lg w-full mx-4 border-2 border-gray-700 shadow-2xl">
-            <h3 className="text-3xl font-bold mb-6 text-white">Add New Task</h3>
+          <div className="bg-white p-8 rounded-2xl max-w-lg w-full mx-4 border-2 border-black shadow-2xl">
+            <h3 className="text-3xl font-bold mb-6 text-black">Add New Task</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Task Name:</label>
+                <label className="block text-sm font-semibold text-black mb-2">Task Name:</label>
                 <input
                   type="text"
                   value={taskName}
@@ -179,15 +257,15 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Task Type:</label>
+                <label className="block text-sm font-semibold text-black mb-2">Task Type:</label>
                 <div className="grid grid-cols-3 gap-2">
                   {POKEMON_DATA.SESSION_TYPES.map(type => (
                     <button
                       key={type}
                       className={`py-3 rounded-lg font-bold transition-all duration-200 border-2 transform hover:scale-105 ${
                         taskType === type
-                          ? `${getTypeButtonColor(type)} border-white shadow-lg scale-105`
-                          : 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600'
+                          ? `${getTypeButtonColor(type)} border-black shadow-lg scale-105`
+                          : 'bg-gray-200 hover:bg-gray-300 text-black border-black'
                       }`}
                       onClick={() => setTaskType(type)}
                     >
@@ -198,7 +276,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Description:</label>
+                <label className="block text-sm font-semibold text-black mb-2">Description:</label>
                 <textarea
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
@@ -235,33 +313,12 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
       {/* Start Task Modal */}
       {selectedTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-gray-800 p-8 rounded-2xl max-w-md w-full mx-4 border-2 border-gray-700 text-center shadow-2xl">
-            <h3 className="text-3xl font-bold mb-4 text-white">{selectedTask.name}</h3>
-            <div className="mb-4">
-              <span className={`px-4 py-2 rounded-lg text-sm font-bold ${getTypeButtonColor(selectedTask.type)}`}>
-                {selectedTask.type}
-              </span>
-            </div>
-            {selectedTask.description && (
-              <p className="text-gray-300 mb-6">{selectedTask.description}</p>
-            )}
-            <div className="flex space-x-4">
-              <button
-                className={style.button + " " + style.primaryButton + " flex-1"}
-                onClick={() => handleStartTask(selectedTask)}
-              >
-                Start Task
-              </button>
-              <button
-                className={style.button + " " + style.secondaryButton + " flex-1"}
-                onClick={() => setSelectedTask(null)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+        <TaskStartModal 
+          task={selectedTask}
+          onStart={(workDuration, breakDuration, numSessions) => handleStartTask(selectedTask, workDuration, breakDuration, numSessions)}
+          onCancel={() => setSelectedTask(null)}
+          getTypeButtonColor={getTypeButtonColor}
+        />
       )}
     </div>
   );

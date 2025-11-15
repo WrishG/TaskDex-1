@@ -6,9 +6,9 @@
   font-family: 'Times New Roman', serif;
   line-height: 1.6;
   font-weight: 400;
-  color-scheme: dark;
-  color: #e5e5e5;
-  background-color: #1a1a1a; /* dark background */
+  color-scheme: light;
+  color: #000000;
+  background-color: #ffffff; /* white background */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   image-rendering: pixelated;
@@ -25,14 +25,14 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-family: 'Times New Roman', serif;
-  background-color: #1a1a1a;
-  color: #e5e5e5;
+  background-color: #ffffff;
+  color: #000000;
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
-  background-color: #1a1a1a;
+  background-color: #ffffff;
 }
 
 /* Pixelated image rendering for sprites */
@@ -42,20 +42,16 @@ img[style*="imageRendering"] {
   image-rendering: crisp-edges;
 }
 
-/* Jersey 15 font class for headings */
+/* Times New Roman bold for headings */
 .font-pixel {
-  font-family: 'Jersey 15', 'Press Start 2P', monospace;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: auto;
-  letter-spacing: 0.05em;
+  font-family: 'Times New Roman', serif;
+  font-weight: bold;
 }
 
-/* All headings use Jersey 15 font */
+/* All headings use bold Times New Roman */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Jersey 15', 'Press Start 2P', monospace;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: auto;
-  letter-spacing: 0.05em;
+  font-family: 'Times New Roman', serif;
+  font-weight: bold;
 }
 
 /* Smooth animations */
