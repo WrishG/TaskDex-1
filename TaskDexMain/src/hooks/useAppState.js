@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore';
 import { app, db } from '../config/firebase.js';
 import { getUserData, saveUserData, initializeUserData } from '../utils/storage.js';
 import { getPokemonDataByName, getRandomWildPokemon, POKEMON_DATA } from '../data/pokemonData.js';
@@ -135,35 +135,179 @@ export function useAppState() {
     }
   }, []);
 
-  // Master Pokedex Unlock Function
+  // Master Pokedex Unlock Function (with backup)
   const handleUnlockPokedex = useCallback(async () => {
-    console.log("Unlocking Master Pokedex...");
-    const allNames = new Set(POKEMON_DATA.list.map(p => p.name));
-    const masterPokedex = [...allNames].map(name => {
-      const p = getPokemonDataByName(name);
-      return { id: p.id, name: p.name };
-    }).sort((a, b) => a.id - b.id);
+    if (!user || !db || !userData) return;
 
-    const updatedData = {
-      ...userData,
-      pokedex: masterPokedex
+    console.log("Unlocking Pokedex for selected types...");
+    
+    // 1. Get current partner ID BEFORE overwriting
+    const currentPartner = userData.pokemon_inventory.find(p => p.isPartner);
+    const currentPartnerId = currentPartner?.id;
+
+    // 2. Define the backup
+    const backup = {
+      pokemon_inventory: userData.pokemon_inventory,
+      pokedex: userData.pokedex
     };
 
-    // Save to Firestore if user is logged in
-    if (user && db) {
-      try {
-        const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
-        await setDoc(userDocRef, updatedData, { merge: true });
-      } catch (error) {
-        console.error("Error saving to Firestore:", error);
+    try {
+      // 3. Create master lists
+      const allNames = new Set(POKEMON_DATA.list.map(p => p.name));
+      const masterPokedex = [];
+      const masterInventory = [];
+      
+      for (const name of allNames) {
+        const p = getPokemonDataByName(name);
+        
+        // Add to Pokedex
+        masterPokedex.push({ id: p.id, name: p.name });
+        
+        // Add to Inventory
+        masterInventory.push({
+          id: crypto.randomUUID(),
+          pokedexId: p.id,
+          name: p.name,
+          type: p.type,
+          exp: 0, 
+          stage: p.evoStage,
+          currentName: p.name,
+          isPartner: false // Set all to false initially
+        });
       }
+
+      // 4. Find the *newly created* instance of the old partner
+      let partnerAssigned = false;
+      if (currentPartnerId) {
+        const oldPartnerData = userData.pokemon_inventory.find(p => p.id === currentPartnerId);
+        if (oldPartnerData) {
+          const newPartnerInstance = masterInventory.find(p => p.pokedexId === oldPartnerData.pokedexId);
+          if (newPartnerInstance) {
+            newPartnerInstance.isPartner = true;
+            partnerAssigned = true;
+          }
+        }
+      }
+
+      // 5. Failsafe if partner wasn't found
+      if (!partnerAssigned && masterInventory.length > 0) {
+        // Default to the first Pokémon in the list (Bulbasaur)
+        masterInventory[0].isPartner = true;
+      }
+
+      // 6. Write to Firestore: Overwrite data and save the backup
+      const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
+      await updateDoc(userDocRef, {
+        pokedex: masterPokedex.sort((a, b) => a.id - b.id),
+        pokemon_inventory: masterInventory,
+        original_progress_backup: backup // Save the backup
+      });
+      
+      console.log("Master Pokedex Unlocked!");
+      alert("Dev Mode ON: Pokédex Unlocked!");
+    } catch (error) {
+      console.error("Error unlocking pokedex:", error);
+    }
+  }, [user, userData, db]);
+
+  // Revert Pokedex Function (Dev Mode OFF)
+  const handleRevertPokedex = useCallback(async () => {
+    if (!user || !db || !userData?.original_progress_backup) {
+      alert("No backup to restore!");
+      return;
     }
 
-    // Also save to localStorage
-    saveUserData(updatedData);
-    setUserData(updatedData);
-    console.log("Master Pokedex Unlocked!");
-    alert("Master Pokédex Unlocked! Go check your Pokédex.");
+    console.log("Reverting to original progress...");
+    try {
+      const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
+      await updateDoc(userDocRef, {
+        pokemon_inventory: userData.original_progress_backup.pokemon_inventory,
+        pokedex: userData.original_progress_backup.pokedex,
+        original_progress_backup: deleteField() // Delete the backup field
+      });
+      alert("Dev Mode OFF: Original progress restored.");
+    } catch (error) {
+      console.error("Error reverting pokedex:", error);
+    }
+  }, [user, userData, db]);
+
+  // Set Partner Function
+  const handleSetNewPartner = useCallback(async (newPartnerInstanceId) => {
+    if (!user || !db || !userData) return;
+
+    const newInventory = userData.pokemon_inventory.map(pokemon => {
+      // Set the new partner
+      if (pokemon.id === newPartnerInstanceId) {
+        return { ...pokemon, isPartner: true };
+      }
+      // Unset the old partner
+      return { ...pokemon, isPartner: false };
+    });
+
+    try {
+      const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
+      await updateDoc(userDocRef, {
+        pokemon_inventory: newInventory
+      });
+      setScreen('MAIN_MENU'); // Go back to main menu after selection
+    } catch (error) {
+      console.error("Error setting new partner:", error);
+    }
+  }, [user, userData, db, setScreen]);
+
+  // Evolve Partner Function
+  const handleEvolvePartner = useCallback(async (partnerInstanceId) => {
+    if (!user || !db || !userData) return;
+
+    const partner = userData.pokemon_inventory.find(p => p.id === partnerInstanceId);
+    if (!partner) return;
+
+    const evoData = getPokemonDataByName(partner.currentName);
+    if (!evoData || evoData.evoExp === -1 || partner.exp < evoData.evoExp) {
+      alert("This Pokémon is not ready to evolve!");
+      return;
+    }
+    
+    // Handle split evolutions (like Poliwhirl) by just picking the first one for now
+    const nextMonName = Array.isArray(evoData.nextEvo) ? evoData.nextEvo[0] : evoData.nextEvo;
+    const nextMonData = getPokemonDataByName(nextMonName);
+    
+    if (!nextMonData) {
+      console.error("Could not find evolution data for", nextMonName);
+      return;
+    }
+    
+    // Find and update the partner in the inventory
+    const newInventory = userData.pokemon_inventory.map(mon => {
+      if (mon.id === partner.id) {
+        return {
+          ...mon,
+          currentName: nextMonData.name, // Update name
+          pokedexId: nextMonData.id,     // Update ID
+          stage: nextMonData.evoStage,     // Update stage
+          exp: 0 // Reset EXP for the new form
+        };
+      }
+      return mon;
+    });
+    
+    // Add new species to Pokedex if it's not already there
+    const newPokedex = [...userData.pokedex];
+    if (!newPokedex.some(p => p.id === nextMonData.id)) {
+      newPokedex.push({ id: nextMonData.id, name: nextMonData.name });
+    }
+    
+    try {
+      const userDocRef = doc(db, 'artifacts', 'default-app-id', 'users', user.uid, 'profile', 'data');
+      await updateDoc(userDocRef, {
+        pokemon_inventory: newInventory,
+        pokedex: newPokedex
+      });
+      alert(`Congratulations! Your ${evoData.name} evolved into ${nextMonData.name}!`);
+      // No screen change, just let the profile screen re-render
+    } catch (error) {
+      console.error("Error evolving Pokemon:", error);
+    }
   }, [user, userData, db]);
 
   // Handle session completion
@@ -187,7 +331,14 @@ export function useAppState() {
 
     if (partnerIndex !== -1) {
       let partner = updatedInventory[partnerIndex];
-      partner.exp = (partner.exp || 0) + expGain;
+      const evoData = getPokemonDataByName(partner.currentName);
+      
+      // Only add EXP if the pokemon is not max level (evoExp === -1)
+      // and not already waiting to evolve
+      if (evoData && evoData.evoExp !== -1 && partner.exp < evoData.evoExp) {
+        partner.exp = (partner.exp || 0) + expGain;
+      }
+      
       updatedInventory[partnerIndex] = partner;
     }
 
@@ -227,25 +378,15 @@ export function useAppState() {
     let updatedInventory = [...userData.pokemon_inventory];
     let updatedPokedex = [...userData.pokedex];
 
-    // Partner Evolution Check
+    // Partner Evolution Check (just flag, don't auto-evolve)
     let partnerIndex = updatedInventory.findIndex(p => p.isPartner);
     if (partnerIndex !== -1) {
       let partner = updatedInventory[partnerIndex];
       const evoData = getPokemonDataByName(partner.currentName);
-
+      
       if (evoData && evoData.evoExp !== -1 && partner.exp >= evoData.evoExp) {
-        const nextMonName = Array.isArray(evoData.nextEvo) ? evoData.nextEvo[0] : evoData.nextEvo;
-        const nextMonData = getPokemonDataByName(nextMonName);
-        if (nextMonData) {
-          partner.currentName = nextMonName;
-          partner.stage = nextMonData.evoStage;
-          hasEvolved = true;
-          if (!updatedPokedex.some(p => p.name === nextMonName)) {
-            updatedPokedex.push({ id: nextMonData.id, name: nextMonName });
-            hasNewPokemon = true;
-          }
-          updatedInventory[partnerIndex] = partner;
-        }
+        // Partner is ready to evolve, set the flag
+        hasEvolved = true;
       }
     }
 
@@ -263,7 +404,7 @@ export function useAppState() {
         pokedexId: wildMonData.id,
         name: name,
         type: wildMonData.type,
-        exp: expGain / 3,
+        exp: Math.floor(expGain / 3), // Floor the EXP
         stage: wildMonData.evoStage,
         currentName: name,
         isPartner: false,
@@ -303,6 +444,9 @@ export function useAppState() {
     handleAuthSuccess,
     handleLogout,
     handleUnlockPokedex,
+    handleRevertPokedex,
+    handleSetNewPartner,
+    handleEvolvePartner,
     sessionConfig,
     setSessionConfig,
     handleSessionComplete,

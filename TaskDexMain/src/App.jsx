@@ -10,6 +10,8 @@ import EncounterScreen from './components/EncounterScreen.jsx';
 import PokedexViewScreen from './components/PokedexViewScreen.jsx';
 import FriendsListScreen from './components/FriendsListScreen.jsx';
 import AchievementsViewScreen from './components/AchievementsViewScreen.jsx';
+import GlobalProfileIcon from './components/GlobalProfileIcon.jsx';
+import PartnerSelectScreen from './components/PartnerSelectScreen.jsx';
 
 function App() {
   const {
@@ -22,6 +24,9 @@ function App() {
     handleAuthSuccess,
     handleLogout,
     handleUnlockPokedex,
+    handleRevertPokedex,
+    handleSetNewPartner,
+    handleEvolvePartner,
     sessionConfig,
     setSessionConfig,
     handleSessionComplete,
@@ -52,7 +57,20 @@ function App() {
         return <StarterSelectScreen saveNewUser={saveNewUser} setScreen={setScreen} userData={userData} />;
       
       case 'MAIN_MENU':
-        return <MainMenuScreen setScreen={setScreen} userData={userData} handleLogout={handleLogout} handleUnlockPokedex={handleUnlockPokedex} />;
+        return <MainMenuScreen setScreen={setScreen} userData={userData} handleUnlockPokedex={handleUnlockPokedex} handleRevertPokedex={handleRevertPokedex} />;
+      
+      case 'PARTNER_SELECT_SCREEN':
+        return (
+          <PartnerSelectScreen 
+            setScreen={setScreen} 
+            userData={userData} 
+            handleLogout={handleLogout}
+            handleSetNewPartner={handleSetNewPartner}
+            handleEvolvePartner={handleEvolvePartner}
+            handleUnlockPokedex={handleUnlockPokedex}
+            handleRevertPokedex={handleRevertPokedex}
+          />
+        );
       
       case 'POMODORO_SETUP':
         return <PomodoroSetupScreen setScreen={setScreen} setSessionConfig={setSessionConfig} />;
@@ -97,12 +115,16 @@ function App() {
         return <AchievementsViewScreen setScreen={setScreen} userData={userData} />;
       
       default:
-        return <MainMenuScreen setScreen={setScreen} userData={userData} handleUnlockPokedex={handleUnlockPokedex} />;
+        return <MainMenuScreen setScreen={setScreen} userData={userData} handleUnlockPokedex={handleUnlockPokedex} handleRevertPokedex={handleRevertPokedex} />;
     }
   };
 
   return (
     <div className="bg-[#f5f5dc] min-h-screen font-pixel">
+      {/* Render the global icon *unless* on a setup/login screen */}
+      {userData && screen !== 'WELCOME' && screen !== 'LOGIN_SIGNUP' && screen !== 'STARTER_SELECT' && (
+        <GlobalProfileIcon setScreen={setScreen} userData={userData} />
+      )}
       {renderScreen()}
     </div>
   );

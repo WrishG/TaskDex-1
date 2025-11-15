@@ -63,22 +63,7 @@ export default function MainMenuScreen({ setScreen, userData, handleLogout, hand
           ))}
         </div>
         
-        <div className="flex justify-between items-center mt-8">
-          <button 
-            className="text-yellow-400 hover:text-yellow-500 text-xs font-semibold"
-            onClick={handleUnlockPokedex}
-          >
-            [Dev Tool: Unlock All Pokémon]
-          </button>
-          {handleLogout && (
-            <button 
-              className="text-red-400 hover:text-red-500 text-sm font-semibold"
-              onClick={handleLogout}
-            >
-              Log Out
-            </button>
-          )}
-        </div>
+        {/* Dev Tools moved to Profile Screen */}
       </div>
     </div>
   );
