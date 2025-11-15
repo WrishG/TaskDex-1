@@ -43,7 +43,7 @@ export default function EncounterScreen({ setScreen, sessionConfig, userData, sa
     const status = await saveCaughtPokemon(caughtMonNames, expGained);
     let messages = [];
     if (status.hasEvolved) {
-      messages.push(`✨ ${partner.currentName} is evolving! Check your menu!`);
+      messages.push(`✨ ${partner.currentName} is ready to evolve! Check your profile!`);
     }
     if (status.hasNewPokemon) {
       messages.push(`📖 New Pokémon registered in the Pokédex!`);
