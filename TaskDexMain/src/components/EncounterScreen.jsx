@@ -62,7 +62,7 @@ export default function EncounterScreen({ setScreen, sessionConfig, userData, sa
   // Status Modal component
   const StatusModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-xl max-w-lg w-full text-center border-4 border-yellow-500">
+      <div className="bg-white p-8 rounded-xl max-w-lg w-full text-center border-4 border-yellow-500 overflow-y-auto max-h-[90vh]">
         <h3 className="text-3xl font-bold text-yellow-600 mb-4">Results!</h3>
         <p className="text-lg text-black mb-6">{statusMessage}</p>
         <button 

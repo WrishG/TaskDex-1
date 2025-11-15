@@ -16,6 +16,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
   const breakDuration = sessionConfig?.restTime || 5;
   const numSessions = sessionConfig?.numSessions || 4;
   const taskName = sessionConfig?.taskName || 'Focus Session';
+  // Use the type from the session config (task type)
   const sessionType = sessionConfig?.type || 'Fire';
   
   // State for current session tracking
