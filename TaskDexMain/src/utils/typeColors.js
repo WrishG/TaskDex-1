@@ -23,3 +23,27 @@ export const getTypeRingColor = (type) => {
   return colors[type] || 'ring-gray-400';
 };
 
+export const getTypeBorderColor = (type) => {
+  const colors = {
+    'Grass': 'border-green-600',
+    'Fire': 'border-red-600',
+    'Water': 'border-blue-600',
+    'Psychic': 'border-pink-400',
+    'Ghost': 'border-blue-900',
+    'Electric': 'border-yellow-500',
+  };
+  return colors[type] || 'border-gray-400';
+};
+
+export const getTypeBgColor = (type) => {
+  const colors = {
+    'Grass': 'bg-green-100',
+    'Fire': 'bg-red-100',
+    'Water': 'bg-blue-100',
+    'Psychic': 'bg-pink-100',
+    'Ghost': 'bg-blue-50',
+    'Electric': 'bg-yellow-100',
+  };
+  return colors[type] || 'bg-gray-100';
+};
+

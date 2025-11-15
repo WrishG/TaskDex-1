@@ -152,10 +152,16 @@ export function useAppState() {
     };
 
     try {
-      // 3. Create master lists
+      // 3. Create master lists, preserving existing pokemon data
       const allNames = new Set(POKEMON_DATA.list.map(p => p.name));
       const masterPokedex = [];
       const masterInventory = [];
+      
+      // Create a map of existing pokemon by pokedexId for quick lookup
+      const existingPokemonMap = new Map();
+      userData.pokemon_inventory.forEach(mon => {
+        existingPokemonMap.set(mon.pokedexId, mon);
+      });
       
       for (const name of allNames) {
         const p = getPokemonDataByName(name);
@@ -163,34 +169,50 @@ export function useAppState() {
         // Add to Pokedex
         masterPokedex.push({ id: p.id, name: p.name });
         
-        // Add to Inventory
-        masterInventory.push({
-          id: crypto.randomUUID(),
-          pokedexId: p.id,
-          name: p.name,
-          type: p.type,
-          exp: 0, 
-          stage: p.evoStage,
-          currentName: p.name,
-          isPartner: false // Set all to false initially
-        });
+        // Check if this pokemon already exists in inventory
+        const existingMon = existingPokemonMap.get(p.id);
+        
+        if (existingMon) {
+          // Preserve existing pokemon data (XP, stage, currentName, isPartner)
+          masterInventory.push({
+            id: existingMon.id, // Keep the same ID
+            pokedexId: p.id,
+            name: p.name,
+            type: p.type,
+            exp: existingMon.exp || 0, // Preserve XP
+            stage: existingMon.stage !== undefined ? existingMon.stage : p.evoStage,
+            currentName: existingMon.currentName || p.name, // Preserve evolved name
+            isPartner: existingMon.isPartner || false // Preserve partner status
+          });
+        } else {
+          // New pokemon - create fresh entry
+          masterInventory.push({
+            id: crypto.randomUUID(),
+            pokedexId: p.id,
+            name: p.name,
+            type: p.type,
+            exp: 0, 
+            stage: p.evoStage,
+            currentName: p.name,
+            isPartner: false
+          });
+        }
       }
 
-      // 4. Find the *newly created* instance of the old partner
-      let partnerAssigned = false;
-      if (currentPartnerId) {
+      // 4. Ensure partner is preserved (should already be preserved from above, but double-check)
+      const partnerInNewInventory = masterInventory.find(p => p.isPartner);
+      if (!partnerInNewInventory && currentPartnerId) {
         const oldPartnerData = userData.pokemon_inventory.find(p => p.id === currentPartnerId);
         if (oldPartnerData) {
           const newPartnerInstance = masterInventory.find(p => p.pokedexId === oldPartnerData.pokedexId);
           if (newPartnerInstance) {
             newPartnerInstance.isPartner = true;
-            partnerAssigned = true;
           }
         }
       }
 
       // 5. Failsafe if partner wasn't found
-      if (!partnerAssigned && masterInventory.length > 0) {
+      if (!masterInventory.find(p => p.isPartner) && masterInventory.length > 0) {
         // Default to the first Pokémon in the list (Bulbasaur)
         masterInventory[0].isPartner = true;
       }
@@ -439,16 +461,27 @@ export function useAppState() {
               hasNewPokemon = true;
             }
             
-            updatedInventory.push({
-              id: crypto.randomUUID(),
-              pokedexId: wildMonData.id,
-              name: name,
-              type: wildMonData.type,
-              exp: Math.floor(expGain / 3), // Floor the EXP
-              stage: wildMonData.evoStage,
-              currentName: name,
-              isPartner: false,
-            });
+            // Check if this pokemon already exists in inventory (duplicate)
+            const existingMonIndex = updatedInventory.findIndex(
+              p => p.pokedexId === wildMonData.id && !p.isPartner
+            );
+            
+            if (existingMonIndex !== -1) {
+              // Duplicate found - add 150 EXP to existing pokemon
+              updatedInventory[existingMonIndex].exp = (updatedInventory[existingMonIndex].exp || 0) + 150;
+            } else {
+              // New pokemon - add to inventory
+              updatedInventory.push({
+                id: crypto.randomUUID(),
+                pokedexId: wildMonData.id,
+                name: name,
+                type: wildMonData.type,
+                exp: Math.floor(expGain / 3), // Floor the EXP
+                stage: wildMonData.evoStage,
+                currentName: name,
+                isPartner: false,
+              });
+            }
           });
           
           transaction.update(userDocRef, {
@@ -485,16 +518,27 @@ export function useAppState() {
           hasNewPokemon = true;
         }
 
-        updatedInventory.push({
-          id: crypto.randomUUID(),
-          pokedexId: wildMonData.id,
-          name: name,
-          type: wildMonData.type,
-          exp: Math.floor(expGain / 3),
-          stage: wildMonData.evoStage,
-          currentName: name,
-          isPartner: false,
-        });
+        // Check if this pokemon already exists in inventory (duplicate)
+        const existingMonIndex = updatedInventory.findIndex(
+          p => p.pokedexId === wildMonData.id && !p.isPartner
+        );
+        
+        if (existingMonIndex !== -1) {
+          // Duplicate found - add 150 EXP to existing pokemon
+          updatedInventory[existingMonIndex].exp = (updatedInventory[existingMonIndex].exp || 0) + 150;
+        } else {
+          // New pokemon - add to inventory
+          updatedInventory.push({
+            id: crypto.randomUUID(),
+            pokedexId: wildMonData.id,
+            name: name,
+            type: wildMonData.type,
+            exp: Math.floor(expGain / 3),
+            stage: wildMonData.evoStage,
+            currentName: name,
+            isPartner: false,
+          });
+        }
       });
 
       const updatedData = {

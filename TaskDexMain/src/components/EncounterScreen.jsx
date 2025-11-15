@@ -1,6 +1,7 @@
 import React from 'react';
 import { getGifUrl } from '../utils/sprites.js';
 import { getPokemonDataByName } from '../data/pokemonData.js';
+import { getTypeHoverColor, getTypeBorderColor, getTypeBgColor, getTypeRingColor } from '../utils/typeColors.js';
 
 const style = {
   card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
@@ -92,14 +93,23 @@ export default function EncounterScreen({ setScreen, sessionConfig, userData, sa
         <p className="text-gray-700 mb-6">Select <strong>up to 2</strong> Pokémon to catch and add to your team.</p>
         
         <div className="grid grid-cols-3 gap-6 mb-8">
-          {encounters.map((mon, index) => (
-            <div 
-              key={index}
-              className={`p-4 rounded-xl cursor-pointer transition-all duration-200 border-2 ${
-                selectedMonIds.includes(index) ? 'border-green-600 bg-green-100 ring-4 ring-green-500' : 'border-gray-300 bg-white hover:border-gray-500'
-              } ${isSaving && !selectedMonIds.includes(index) ? 'opacity-50' : ''}`}
-              onClick={() => handleSelectMon(index)}
-            >
+          {encounters.map((mon, index) => {
+            const typeHoverClass = getTypeHoverColor(mon.type);
+            const typeBorderClass = getTypeBorderColor(mon.type);
+            const typeBgClass = getTypeBgColor(mon.type);
+            const typeRingClass = getTypeRingColor(mon.type);
+            const isSelected = selectedMonIds.includes(index);
+            
+            return (
+              <div 
+                key={index}
+                className={`p-4 rounded-xl cursor-pointer transition-all duration-200 border-2 ${
+                  isSelected 
+                    ? `${typeBorderClass} ${typeBgClass} ring-4 ${typeRingClass}` 
+                    : `border-gray-300 bg-white ${typeHoverClass} hover:ring-2`
+                } ${isSaving && !isSelected ? 'opacity-50' : ''}`}
+                onClick={() => handleSelectMon(index)}
+              >
               <img
                 src={getGifUrl(mon.name)}
                 alt={mon.name}
@@ -109,8 +119,9 @@ export default function EncounterScreen({ setScreen, sessionConfig, userData, sa
               />
               <p className="font-semibold text-black">{mon.name}</p>
               <p className="text-xs text-gray-600">{mon.type}</p>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
         
         <button

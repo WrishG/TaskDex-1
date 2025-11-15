@@ -1,7 +1,7 @@
 import React from 'react';
 import { getGifUrl } from '../utils/sprites.js';
 import { getPokemonDataByName } from '../data/pokemonData.js';
-import { getTypeHoverColor } from '../utils/typeColors.js';
+import { getTypeHoverColor, getTypeBorderColor } from '../utils/typeColors.js';
 
 const style = {
   card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
@@ -49,7 +49,7 @@ export default function PartnerSelectScreen({
               <img 
                 src={getGifUrl(currentPartner.currentName)} 
                 alt="Partner" 
-                className="bg-white rounded-full p-2 border-2 border-green-600"
+                className={`bg-white rounded-full p-2 border-4 ${getTypeBorderColor(currentPartner.type)}`}
                 style={{ width: '80px', height: '80px', imageRendering: 'pixelated' }}
                 onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
               />
@@ -57,7 +57,7 @@ export default function PartnerSelectScreen({
               {/* EXP Display */}
               {partnerData && partnerData.evoExp !== -1 ? (
                 <div className="mt-2">
-                  <p className="text-sm text-yellow-600 font-semibold">
+                  <p className="text-sm text-black font-semibold">
                     EXP: {Math.floor(currentPartner.exp || 0)} / {partnerData.evoExp}
                   </p>
                   <div className="w-full bg-gray-300 rounded-full h-2 mt-1 max-w-[120px] mx-auto">
@@ -109,18 +109,20 @@ export default function PartnerSelectScreen({
                     !
                   </span>
                 )}
-                <img 
-                  src={getGifUrl(mon.currentName)} 
-                  alt={mon.currentName}
-                  className="mx-auto" 
-                  style={{ width: '56px', height: '56px', imageRendering: 'pixelated' }}
-                  onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-                />
+                <div className={`mx-auto rounded-full p-1 border-2 ${getTypeBorderColor(mon.type)} inline-block`}>
+                  <img 
+                    src={getGifUrl(mon.currentName)} 
+                    alt={mon.currentName}
+                    className="mx-auto" 
+                    style={{ width: '56px', height: '56px', imageRendering: 'pixelated' }}
+                    onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
+                  />
+                </div>
                 <p className="text-xs mt-1">{mon.currentName}</p>
                 {/* EXP Display */}
                 {evoData && evoData.evoExp !== -1 ? (
                   <>
-                    <p className="text-xs text-yellow-600 mt-1 font-semibold">
+                    <p className="text-xs text-black mt-1 font-semibold">
                       {Math.floor(mon.exp || 0)} / {evoData.evoExp}
                     </p>
                     <div className="w-full bg-gray-300 rounded-full h-1.5 mt-1">

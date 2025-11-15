@@ -13,6 +13,7 @@ import AchievementsViewScreen from './components/AchievementsViewScreen.jsx';
 import GlobalProfileIcon from './components/GlobalProfileIcon.jsx';
 import PartnerSelectScreen from './components/PartnerSelectScreen.jsx';
 import GroupLobbyScreen from './components/GroupLobbyScreen.jsx';
+import TopNavigationBar from './components/TopNavigationBar.jsx';
 
 function App() {
   const {
@@ -58,7 +59,7 @@ function App() {
         return <StarterSelectScreen saveNewUser={saveNewUser} setScreen={setScreen} userData={userData} />;
       
       case 'MAIN_MENU':
-        return <MainMenuScreen setScreen={setScreen} userData={userData} handleUnlockPokedex={handleUnlockPokedex} handleRevertPokedex={handleRevertPokedex} />;
+        return <MainMenuScreen setScreen={setScreen} userData={userData} setSessionConfig={setSessionConfig} />;
       
       case 'PARTNER_SELECT_SCREEN':
         return (
@@ -119,12 +120,16 @@ function App() {
         return <GroupLobbyScreen setScreen={setScreen} />;
       
       default:
-        return <MainMenuScreen setScreen={setScreen} userData={userData} handleUnlockPokedex={handleUnlockPokedex} handleRevertPokedex={handleRevertPokedex} />;
+        return <MainMenuScreen setScreen={setScreen} userData={userData} setSessionConfig={setSessionConfig} />;
     }
   };
 
   return (
     <div className="bg-[#f5f5dc] min-h-screen">
+      {/* Top Navigation Bar */}
+      {userData && screen !== 'WELCOME' && screen !== 'LOGIN_SIGNUP' && screen !== 'STARTER_SELECT' && (
+        <TopNavigationBar setScreen={setScreen} userData={userData} currentScreen={screen} />
+      )}
       {/* Render the global icon *unless* on a setup/login screen */}
       {userData && screen !== 'WELCOME' && screen !== 'LOGIN_SIGNUP' && screen !== 'STARTER_SELECT' && (
         <GlobalProfileIcon setScreen={setScreen} userData={userData} />
