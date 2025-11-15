@@ -7,7 +7,151 @@
     <title>taskdexmainpackage</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Login View -->
+      <div id="login-view" class="view active">
+        <div class="auth-container">
+          <h1>TaskDex</h1>
+          <div class="auth-section">
+            <h2>Login</h2>
+            <input type="text" id="login-email" placeholder="Email or Username" />
+            <input type="password" id="login-password" placeholder="Password" />
+            <button id="login-button">Login</button>
+            <button id="google-signin-button" class="google-btn">Continue with Google</button>
+            <div class="signup-link">
+              <a href="#" id="go-to-signup">Sign up</a>
+            </div>
+            <div id="login-status-message" class="status-message"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sign Up View -->
+      <div id="signup-view" class="view">
+        <div class="auth-container">
+          <h1>Create Account</h1>
+          <div class="auth-section">
+            <h2>Sign Up</h2>
+            <input type="email" id="signup-email" placeholder="Email" />
+            <input type="text" id="signup-username" placeholder="Username" />
+            <input type="password" id="signup-password" placeholder="Set Password" />
+            <input type="password" id="signup-confirm-password" placeholder="Confirm Password" />
+            <button id="signup-button">Sign Up</button>
+            <div class="signup-link">
+              <a href="#" id="go-to-login">Back to Login</a>
+            </div>
+            <div id="signup-status-message" class="status-message"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OTP Verification View -->
+      <div id="otp-view" class="view">
+        <div class="auth-container">
+          <h1>Verify Email</h1>
+          <div class="auth-section">
+            <h2>Enter OTP</h2>
+            <p class="otp-info">We've sent a verification code to your email. Please enter it below.</p>
+            <input type="text" id="otp-input" placeholder="Enter 6-digit OTP" maxlength="6" />
+            <button id="verify-otp-button">Verify</button>
+            <button id="resend-otp-button" class="link-button">Resend OTP</button>
+            <div id="otp-status-message" class="status-message"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Character Selection View -->
+      <div id="character-view" class="view">
+        <div class="character-container">
+          <h1>Choose Your Character</h1>
+          <div class="character-selection">
+            <div class="character-option" data-character="trainer">
+              <div class="character-sprite trainer-sprite"></div>
+              <p>Trainer</p>
+            </div>
+            <div class="character-option" data-character="rival">
+              <div class="character-sprite rival-sprite"></div>
+              <p>Rival</p>
+            </div>
+          </div>
+          <div id="pokemon-selection" class="pokemon-selection hidden">
+            <h2>Choose Your Starter Pokemon</h2>
+            <div class="pokemon-options">
+              <div class="pokemon-option" data-pokemon="charmander">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="Charmander" />
+                <p>Charmander</p>
+              </div>
+              <div class="pokemon-option" data-pokemon="squirtle">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="Squirtle" />
+                <p>Squirtle</p>
+              </div>
+              <div class="pokemon-option" data-pokemon="bulbasaur">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="Bulbasaur" />
+                <p>Bulbasaur</p>
+              </div>
+            </div>
+          </div>
+          <div id="character-status-message" class="status-message"></div>
+        </div>
+      </div>
+
+      <!-- Main Home View -->
+      <div id="home-view" class="view">
+        <!-- Sidebar Menu -->
+        <div class="sidebar">
+          <div class="sidebar-header">
+            <h2>TaskDex</h2>
+          </div>
+          <nav class="sidebar-menu">
+            <a href="#" class="menu-item active" data-page="tasks">
+              <span>📋</span> Tasks
+            </a>
+            <a href="#" class="menu-item" data-page="pokedex">
+              <span>📖</span> Pokedex
+            </a>
+            <a href="#" class="menu-item" data-page="connect">
+              <span>🔗</span> Connect
+            </a>
+            <a href="#" class="menu-item" id="logout-menu-item">
+              <span>🚪</span> Logout
+            </a>
+          </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+          <div id="tasks-page" class="page active">
+            <div class="page-header">
+              <h2>My Tasks</h2>
+              <button id="add-task-button" class="add-button">+</button>
+            </div>
+            <div id="tasks-container" class="tasks-container">
+              <div id="no-tasks-message" class="no-tasks">
+                <p>No tasks yet. Create your first task!</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="pokedex-page" class="page">
+            <div class="page-header">
+              <h2>Pokedex</h2>
+            </div>
+            <div id="pokedex-container" class="pokedex-container">
+              <p>Your Pokemon collection will appear here.</p>
+            </div>
+          </div>
+
+          <div id="connect-page" class="page">
+            <div class="page-header">
+              <h2>Connect</h2>
+            </div>
+            <div id="connect-container" class="connect-container">
+              <p>Connect with other trainers here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
