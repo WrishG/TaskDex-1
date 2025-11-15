@@ -10,6 +10,92 @@ const style = {
   input: "w-full p-3 rounded-lg bg-white border-2 border-gray-300 text-black focus:border-red-500 focus:ring-2 focus:ring-red-500",
 };
 
+// Task Start Modal Component
+function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor }) {
+  const [workDuration, setWorkDuration] = React.useState(30);
+  const [breakDuration, setBreakDuration] = React.useState(5);
+  const [numSessions, setNumSessions] = React.useState(4);
+
+  const handleStart = () => {
+    if (workDuration >= 20 && breakDuration >= 1 && numSessions >= 1) {
+      onStart(workDuration, breakDuration, numSessions);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-xl max-w-md w-full mx-4 border-2 border-gray-300">
+        <h3 className="text-3xl font-bold mb-4 text-black text-center">{task.name}</h3>
+        <div className="mb-4 text-center">
+          <span className={`px-4 py-2 rounded-lg text-sm font-bold ${getTypeButtonColor(task.type)}`}>
+            {task.type}
+          </span>
+        </div>
+        {task.description && (
+          <p className="text-gray-700 mb-6 text-center">{task.description}</p>
+        )}
+        
+        <div className="space-y-4 mb-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Work Duration (minutes) - Minimum 20:
+            </label>
+            <input
+              type="number"
+              value={workDuration}
+              onChange={(e) => setWorkDuration(Math.max(20, parseInt(e.target.value) || 20))}
+              className={style.input}
+              min="20"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Break Duration (minutes) - Minimum 1:
+            </label>
+            <input
+              type="number"
+              value={breakDuration}
+              onChange={(e) => setBreakDuration(Math.max(1, parseInt(e.target.value) || 1))}
+              className={style.input}
+              min="1"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Number of Sessions - Minimum 1:
+            </label>
+            <input
+              type="number"
+              value={numSessions}
+              onChange={(e) => setNumSessions(Math.max(1, parseInt(e.target.value) || 1))}
+              className={style.input}
+              min="1"
+            />
+          </div>
+        </div>
+        
+        <div className="flex space-x-4">
+          <button
+            className={style.button + " " + style.primaryButton + " flex-1"}
+            onClick={handleStart}
+            disabled={workDuration < 20 || breakDuration < 1 || numSessions < 1}
+          >
+            Start Task
+          </button>
+          <button
+            className={style.button + " " + style.secondaryButton + " flex-1"}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TasksScreen({ setScreen, userData, tasks, setTasks, setSessionConfig }) {
   const [showAddTask, setShowAddTask] = React.useState(false);
   const [selectedTask, setSelectedTask] = React.useState(null);
@@ -23,17 +109,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
     return !hasSeenWelcome;
   });
   
-  // Hide welcome message after 5 seconds or when user dismisses it
-  React.useEffect(() => {
-    if (showWelcome) {
-      const timer = setTimeout(() => {
-        setShowWelcome(false);
-        sessionStorage.setItem('hasSeenWelcome', 'true');
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showWelcome]);
-  
+  // Welcome message stays until user dismisses it
   const handleDismissWelcome = () => {
     setShowWelcome(false);
     sessionStorage.setItem('hasSeenWelcome', 'true');
@@ -61,12 +137,14 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
     setShowAddTask(false);
   };
 
-  const handleStartTask = (task) => {
+  const handleStartTask = (task, workDuration, breakDuration, numSessions) => {
     setSessionConfig({ 
       type: task.type, 
-      studyTime: 30, 
-      restTime: 5,
-      taskId: task.id 
+      studyTime: workDuration, 
+      restTime: breakDuration,
+      taskId: task.id,
+      taskName: task.name,
+      numSessions: numSessions
     });
     setSelectedTask(null);
     setScreen('POMODORO_RUNNING');
@@ -234,33 +312,12 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
       {/* Start Task Modal */}
       {selectedTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl max-w-md w-full mx-4 border-2 border-gray-300 text-center">
-            <h3 className="text-3xl font-bold mb-4 text-black">{selectedTask.name}</h3>
-            <div className="mb-4">
-              <span className={`px-4 py-2 rounded-lg text-sm font-bold ${getTypeButtonColor(selectedTask.type)}`}>
-                {selectedTask.type}
-              </span>
-            </div>
-            {selectedTask.description && (
-              <p className="text-gray-700 mb-6">{selectedTask.description}</p>
-            )}
-            <div className="flex space-x-4">
-              <button
-                className={style.button + " " + style.primaryButton + " flex-1"}
-                onClick={() => handleStartTask(selectedTask)}
-              >
-                Start Task
-              </button>
-              <button
-                className={style.button + " " + style.secondaryButton + " flex-1"}
-                onClick={() => setSelectedTask(null)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+        <TaskStartModal 
+          task={selectedTask}
+          onStart={(workDuration, breakDuration, numSessions) => handleStartTask(selectedTask, workDuration, breakDuration, numSessions)}
+          onCancel={() => setSelectedTask(null)}
+          getTypeButtonColor={getTypeButtonColor}
+        />
       )}
     </div>
   );

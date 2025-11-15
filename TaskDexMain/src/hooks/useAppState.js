@@ -349,7 +349,7 @@ export function useAppState() {
   }, [user, userData, db]);
 
   // Handle session completion
-  const handleSessionComplete = useCallback(async (durationMinutes, sessionType) => {
+  const handleSessionComplete = useCallback(async (durationMinutes, sessionType, skipNavigation = false) => {
     if (!userData) return;
 
     const totalEncounters = Math.floor(durationMinutes / 10);
@@ -431,7 +431,10 @@ export function useAppState() {
       expGained: expGain,
       encounters: wildPokemon
     });
-    setScreen('ENCOUNTER_SCREEN');
+    
+    if (!skipNavigation) {
+      setScreen('ENCOUNTER_SCREEN');
+    }
   }, [user, userData, sessionConfig, db]);
 
   // Save caught Pokemon

@@ -95,6 +95,7 @@ function App() {
             sessionConfig={sessionConfig}
             userData={userData}
             handleSessionComplete={handleSessionComplete}
+            saveCaughtPokemon={saveCaughtPokemon}
           />
         );
       

@@ -1,6 +1,8 @@
 import React from 'react';
 import { formatTime } from '../utils/formatTime.js';
+import { getRandomWildPokemon } from '../data/pokemonData.js';
 import { getGifUrl } from '../utils/sprites.js';
+import { getTypeHoverColor, getTypeBorderColor, getTypeBgColor, getTypeRingColor } from '../utils/typeColors.js';
 
 const style = {
   card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
@@ -8,129 +10,328 @@ const style = {
   secondaryButton: "bg-gray-600 text-white hover:bg-gray-700",
 };
 
-export default function PomodoroRunningScreen({ setScreen, sessionConfig, userData, handleSessionComplete }) {
-  const totalStudySeconds = sessionConfig?.studyTime * 60 || 0;
-  const totalRestSeconds = sessionConfig?.restTime * 60 || 0;
-  const initialTime = sessionConfig?.breakTriggered ? totalRestSeconds : totalStudySeconds;
-  const initialPhase = sessionConfig?.breakTriggered ? 'Rest' : 'Study';
+export default function PomodoroRunningScreen({ setScreen, sessionConfig, userData, handleSessionComplete, saveCaughtPokemon }) {
+  const workDuration = sessionConfig?.studyTime || 30;
+  const breakDuration = sessionConfig?.restTime || 5;
+  const numSessions = sessionConfig?.numSessions || 4;
+  const taskName = sessionConfig?.taskName || 'Focus Session';
+  const sessionType = sessionConfig?.type || 'Fire';
   
-  const [timeLeft, setTimeLeft] = React.useState(initialTime);
-  const [phase, setPhase] = React.useState(initialPhase);
+  // State for current session tracking
+  const [currentSession, setCurrentSession] = React.useState(1);
+  const [isWorkPhase, setIsWorkPhase] = React.useState(true);
+  const [timeLeft, setTimeLeft] = React.useState(workDuration * 60);
   const [isRunning, setIsRunning] = React.useState(true);
+  const [completedSessions, setCompletedSessions] = React.useState(0);
+  const [timerKey, setTimerKey] = React.useState(0);
+  
+  // Pokemon encounter state (shown during break)
+  const [encounters, setEncounters] = React.useState([]);
+  const [expGained, setExpGained] = React.useState(0);
+  const [selectedMonIds, setSelectedMonIds] = React.useState([]);
+  const [caughtMonIds, setCaughtMonIds] = React.useState([]); // Track which pokemon have been caught
+  const [isSaving, setIsSaving] = React.useState(false);
+  
   const timerRef = React.useRef(null);
   
-  const partner = userData?.pokemon_inventory.find(p => p.isPartner);
-  const partnerName = partner?.currentName || 'Charmander';
-  const trainerSprite = userData?.trainerGender === 'male' ? 'TrainerMale' : 'TrainerFemale';
-  const sessionType = sessionConfig?.type || 'Fire';
+  // Refs to track current values
+  const currentSessionRef = React.useRef(currentSession);
+  const isWorkPhaseRef = React.useRef(isWorkPhase);
+  
+  // Keep refs in sync with state
+  React.useEffect(() => {
+    currentSessionRef.current = currentSession;
+    isWorkPhaseRef.current = isWorkPhase;
+  }, [currentSession, isWorkPhase]);
+  
+  // Calculate encounters and EXP when work completes (without navigating)
+  const calculateEncounters = React.useCallback((durationMinutes, type) => {
+    const totalEncounters = Math.floor(durationMinutes / 10);
+    const expGain = Math.floor(durationMinutes / 30 * 100);
+    
+    const wildPokemon = [];
+    for (let i = 0; i < totalEncounters; i++) {
+      const wildMonData = getRandomWildPokemon(type);
+      if (wildMonData) {
+        wildPokemon.push(wildMonData);
+      }
+    }
+    
+    return { encounters: wildPokemon, expGain };
+  }, []);
   
   // Timer logic
   React.useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prevTime) => prevTime - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
+    if (timerRef.current) {
       clearInterval(timerRef.current);
-      if (phase === 'Study') {
-        handleSessionComplete(sessionConfig.studyTime, sessionType);
-      } else if (phase === 'Rest') {
+      timerRef.current = null;
+    }
+    
+    if (!isRunning) {
+      return;
+    }
+    
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        const newTime = prevTime - 1;
+        
+        if (newTime <= 0) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          
+          setTimeout(() => {
+            const currentPhase = isWorkPhaseRef.current;
+            const currentSessionNum = currentSessionRef.current;
+            
+            if (currentPhase) {
+              // Work phase completed - calculate encounters and start break
+              const { encounters: newEncounters, expGain } = calculateEncounters(workDuration, sessionType);
+              setEncounters(newEncounters);
+              setExpGained(expGain);
+              setSelectedMonIds([]);
+              setCaughtMonIds([]); // Reset caught pokemon for new break
+              
+              // Update EXP without navigating
+              if (handleSessionComplete) {
+                handleSessionComplete(workDuration, sessionType, true);
+              }
+              
+              if (currentSessionNum <= numSessions) {
+                setIsWorkPhase(false);
+                setTimeLeft(breakDuration * 60);
+                setTimerKey(prev => prev + 1);
+                setIsRunning(true);
+              } else {
+                setScreen('MAIN_MENU');
+              }
+            } else {
+              // Break phase completed - mark session complete and move to next
+              if (currentSessionNum < numSessions) {
+                setCompletedSessions(prev => prev + 1);
+                setCurrentSession(prev => prev + 1);
+                setIsWorkPhase(true);
+                setTimeLeft(workDuration * 60);
+                setEncounters([]);
+                setSelectedMonIds([]);
+                setCaughtMonIds([]); // Reset caught pokemon for new session
+                setTimerKey(prev => prev + 1);
+                setIsRunning(true);
+              } else {
+                setCompletedSessions(prev => prev + 1);
+                setScreen('MAIN_MENU');
+              }
+            }
+          }, 0);
+          
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isRunning, isWorkPhase, timerKey, numSessions, workDuration, breakDuration, sessionType, calculateEncounters, handleSessionComplete, setScreen]);
+  
+  const handleSkip = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    const currentPhase = isWorkPhaseRef.current;
+    const currentSessionNum = currentSessionRef.current;
+    
+    if (currentPhase) {
+      // Skipping during work: calculate encounters and go to break
+      const { encounters: newEncounters, expGain } = calculateEncounters(workDuration, sessionType);
+      setEncounters(newEncounters);
+      setExpGained(expGain);
+      setSelectedMonIds([]);
+      setCaughtMonIds([]); // Reset caught pokemon for new break
+      
+      // Update EXP without navigating
+      if (handleSessionComplete) {
+        handleSessionComplete(workDuration, sessionType, true);
+      }
+      
+      setIsWorkPhase(false);
+      setTimeLeft(breakDuration * 60);
+      setTimerKey(prev => prev + 1);
+      setIsRunning(true);
+    } else {
+      // Skipping during break: mark session complete and move to next
+      setCompletedSessions(prev => prev + 1);
+      
+      const nextSession = currentSessionNum + 1;
+      if (nextSession <= numSessions) {
+        setCurrentSession(nextSession);
+        setIsWorkPhase(true);
+        setTimeLeft(workDuration * 60);
+        setEncounters([]);
+        setSelectedMonIds([]);
+        setCaughtMonIds([]); // Reset caught pokemon for new session
+        setTimerKey(prev => prev + 1);
+        setIsRunning(true);
+      } else {
         setScreen('MAIN_MENU');
       }
     }
-    return () => clearInterval(timerRef.current);
-  }, [isRunning, timeLeft, phase, sessionConfig, sessionType, handleSessionComplete, setScreen]);
+  };
   
-  const handleSkip = () => {
-    clearInterval(timerRef.current);
-    setTimeLeft(0);
-    if (phase === 'Study') {
-      handleSessionComplete(sessionConfig.studyTime, sessionType);
-    } else if (phase === 'Rest') {
-      setScreen('MAIN_MENU');
+  const handleSelectMon = (index) => {
+    // Don't allow selection of already caught pokemon
+    if (caughtMonIds.includes(index)) {
+      return;
     }
+    
+    setSelectedMonIds(prev => {
+      if (prev.includes(index)) {
+        return prev.filter(mid => mid !== index);
+      } else if (prev.length < 2) {
+        return [...prev, index];
+      }
+      return prev;
+    });
   };
   
-  const isBreak = phase === 'Rest';
-  const headerColor = isBreak ? 'text-green-400' : 'text-red-400';
-  const totalTime = isBreak ? totalRestSeconds : totalStudySeconds;
+  const handleCatchPokemon = async () => {
+    if (selectedMonIds.length === 0 || isSaving || !saveCaughtPokemon) return;
+    
+    setIsSaving(true);
+    const caughtMonNames = encounters
+      .filter((_, index) => selectedMonIds.includes(index))
+      .map(mon => mon.name);
+    
+    await saveCaughtPokemon(caughtMonNames, expGained);
+    setIsSaving(false);
+    
+    // Mark these pokemon as caught
+    setCaughtMonIds(prev => [...prev, ...selectedMonIds]);
+    setSelectedMonIds([]);
+  };
+  
+  // Status text
+  const statusText = isWorkPhase 
+    ? `Work Session ${currentSession}/${numSessions}`
+    : `Break Time ${currentSession}/${numSessions}`;
+  
+  const isBreak = !isWorkPhase;
+  const headerColor = isBreak ? 'text-green-600' : 'text-red-600';
+  const totalTime = isBreak ? breakDuration * 60 : workDuration * 60;
   const progress = totalTime > 0 ? (1 - (timeLeft / totalTime)) * 100 : 0;
-  
-  // Map style
-  const mapStyle = {
-    backgroundImage: `url(https://raw.githubusercontent.com/wrish6/prototype/main/map_background.png)`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'repeat',
-    height: '40vh',
-    width: '100%',
-    position: 'relative',
-    overflow: 'hidden',
-    border: '4px solid #4f46e5',
-    borderRadius: '0.75rem',
-  };
   
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-[#f5f5dc] text-black">
-      <div className={style.card + " max-w-4xl w-full mt-12"}>
-        <h2 className={`text-4xl font-bold mb-4 text-center ${isBreak ? 'text-green-600' : 'text-red-600'}`}>
-          {phase === 'Study' ? `Focusing on ${sessionType} Flight` : 'BREAK TIME!'}
+      <div className={style.card + " max-w-2xl w-full mt-12"}>
+        {/* Task Name */}
+        <h2 className={`text-4xl font-bold mb-6 text-center ${headerColor}`}>
+          {taskName}
         </h2>
         
         {/* Timer Display */}
         <div className="text-center mb-6">
-          <div className="text-7xl font-mono font-extrabold mb-2 text-black bg-gray-100 p-4 rounded-lg shadow-inner border-2 border-gray-300">
+          <div className="text-8xl font-mono font-extrabold mb-4 text-black bg-gray-100 p-6 rounded-lg shadow-inner border-2 border-gray-300">
             {formatTime(timeLeft)}
           </div>
-          <p className="text-gray-700 text-lg">
-            {phase} Session | {sessionConfig.studyTime} Min Study / {sessionConfig.restTime} Min Rest
+          
+          {/* Status Text */}
+          <p className="text-gray-700 text-xl mb-4 font-semibold">
+            {statusText}
           </p>
+          
+          {/* Visual Tracker Dots */}
+          <div className="flex justify-center items-center space-x-2 mb-4">
+            {Array.from({ length: numSessions }, (_, i) => {
+              const sessionNum = i + 1;
+              const isCompleted = sessionNum <= completedSessions;
+              return (
+                <span
+                  key={sessionNum}
+                  className={`text-3xl ${isCompleted ? 'text-green-600' : 'text-gray-300'}`}
+                >
+                  ●
+                </span>
+              );
+            })}
+          </div>
         </div>
         
         {/* Progress Bar */}
         <div className="w-full bg-gray-300 rounded-full h-3 mb-8">
-          <div className={`h-3 rounded-full ${isBreak ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${progress}%` }}></div>
+          <div 
+            className={`h-3 rounded-full transition-all duration-300 ${isBreak ? 'bg-green-500' : 'bg-red-500'}`} 
+            style={{ width: `${progress}%` }}
+          ></div>
         </div>
         
-        {/* Map and Sprites */}
-        <div style={mapStyle}>
-          <style>{`
-            @keyframes moveAcross1 {
-              0% { transform: translateX(-10%) translateY(0) scaleX(1); }
-              50% { transform: translateX(110%) translateY(20px) scaleX(-1); }
-              100% { transform: translateX(-10%) translateY(0) scaleX(1); }
-            }
-            @keyframes moveAcross2 {
-              0% { transform: translateX(110%) translateY(0) scaleX(1); }
-              50% { transform: translateX(-10%) translateY(-20px) scaleX(-1); }
-              100% { transform: translateX(110%) translateY(0) scaleX(1); }
-            }
-          `}</style>
-          
-          {/* Partner Pokémon Sprite (Animated) */}
-          <img
-            src={getGifUrl(partnerName)}
-            alt={partnerName}
-            style={{animation: 'moveAcross1 30s linear infinite', position: 'absolute', top: '50%', left: '0%', transform: 'translateY(-50%)', imageRendering: 'pixelated', width: '56px', height: '56px', zIndex: 10}}
-            onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-          />
-          
-          {/* Trainer Sprite (Animated, slightly offset) */}
-          <img
-            src={getGifUrl(trainerSprite)}
-            alt="Trainer"
-            style={{animation: 'moveAcross2 25s linear infinite', position: 'absolute', top: '70%', left: '10%', imageRendering: 'pixelated', width: '56px', height: '56px', zIndex: 10}}
-            onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
-          />
-          
-          <div className="absolute top-4 right-4 bg-white/90 p-2 rounded-lg text-sm border-2 border-gray-300">
-            <p className="text-red-600 font-semibold">Flight Zone: {sessionType}</p>
-            <p className="text-gray-700">Partner: {partnerName}</p>
+        {/* Pokemon Selection (only during break) */}
+        {isBreak && encounters.length > 0 && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+            <h3 className="text-xl font-bold mb-3 text-center">Wild Pokémon Encounter ({encounters.length} Found)</h3>
+            <p className="text-sm text-gray-600 mb-4 text-center">Select up to 2 Pokémon to catch</p>
+            
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              {encounters.map((mon, index) => {
+                const isSelected = selectedMonIds.includes(index);
+                const isCaught = caughtMonIds.includes(index);
+                const typeHoverClass = getTypeHoverColor(mon.type);
+                const typeBorderClass = getTypeBorderColor(mon.type);
+                const typeBgClass = getTypeBgColor(mon.type);
+                const typeRingClass = getTypeRingColor(mon.type);
+                
+                return (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg transition-all duration-200 border-2 relative ${
+                      isCaught
+                        ? 'border-gray-400 bg-gray-200 opacity-60 cursor-not-allowed'
+                        : isSelected
+                        ? `cursor-pointer ${typeBorderClass} ${typeBgClass} ring-4 ${typeRingClass}`
+                        : `cursor-pointer border-gray-300 bg-white ${typeHoverClass} hover:ring-2`
+                    }`}
+                    onClick={() => !isCaught && handleSelectMon(index)}
+                  >
+                    {/* Tick mark for caught pokemon */}
+                    {isCaught && (
+                      <div className="absolute top-1 right-1 bg-green-500 rounded-full w-6 h-6 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">✓</span>
+                      </div>
+                    )}
+                    <img
+                      src={getGifUrl(mon.name)}
+                      alt={mon.name}
+                      className="mx-auto mb-1"
+                      style={{ imageRendering: 'pixelated', width: '48px', height: '48px' }}
+                      onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
+                    />
+                    <p className="font-semibold text-sm text-center">{mon.name}</p>
+                    <p className="text-xs text-gray-600 text-center">{mon.type}</p>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {selectedMonIds.length > 0 && (
+              <button
+                className={style.button + " bg-green-600 text-white hover:bg-green-700 w-full"}
+                onClick={handleCatchPokemon}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : `Catch ${selectedMonIds.length} Pokémon`}
+              </button>
+            )}
           </div>
-        </div>
+        )}
         
         {/* Controls */}
-        <div className="mt-8 flex justify-center space-x-4">
+        <div className="flex justify-center space-x-4">
           <button
             className={style.button + " " + style.secondaryButton}
             onClick={() => setIsRunning(!isRunning)}
@@ -141,11 +342,16 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
             className={style.button + " bg-yellow-500 text-gray-900 hover:bg-yellow-600"}
             onClick={handleSkip}
           >
-            {phase === 'Study' ? 'Skip Study / End Session' : 'Skip Break / Return to Menu'}
+            Skip Session
+          </button>
+          <button
+            className={style.button + " bg-red-600 text-white hover:bg-red-700"}
+            onClick={() => setScreen('MAIN_MENU')}
+          >
+            End
           </button>
         </div>
       </div>
     </div>
   );
 }
-
