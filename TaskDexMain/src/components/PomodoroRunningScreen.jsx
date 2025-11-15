@@ -187,15 +187,28 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
   };
   
   const handleSelectMon = (index) => {
+    // Calculate max based on work duration: 20-29 = 1, 30-39 = 2, 40-50+ = 3
+    let maxSelectable = 1;
+    if (workDuration >= 40) {
+      maxSelectable = 3;
+    } else if (workDuration >= 30) {
+      maxSelectable = 2;
+    }
+    
     // Don't allow selection of already caught pokemon
     if (caughtMonIds.includes(index)) {
+      return;
+    }
+    
+    // Don't allow selection if max already reached
+    if (caughtMonIds.length >= maxSelectable) {
       return;
     }
     
     setSelectedMonIds(prev => {
       if (prev.includes(index)) {
         return prev.filter(mid => mid !== index);
-      } else if (prev.length < 2) {
+      } else if (prev.length < maxSelectable) {
         return [...prev, index];
       }
       return prev;
@@ -213,7 +226,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
     await saveCaughtPokemon(caughtMonNames, expGained);
     setIsSaving(false);
     
-    // Mark these pokemon as caught
+    // Mark these pokemon as caught AFTER successful save
     setCaughtMonIds(prev => [...prev, ...selectedMonIds]);
     setSelectedMonIds([]);
   };
@@ -253,23 +266,23 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         ></div>
       )}
       
-      <div className={style.card + " max-w-2xl w-full mt-12 relative z-10 bg-white/95 backdrop-blur-sm"}>
+      <div className={style.card + " max-w-2xl w-full mt-12 relative z-10 bg-white/20 backdrop-blur-xl border-2 border-white/30"}>
         {/* Task Name */}
         <h2 
-          className="text-4xl font-bold mb-6 text-center"
-          style={{ color: theme.accentColor }}
+          className="text-4xl font-bold mb-6 text-center text-black"
+          style={{ color: 'black' }}
         >
           {taskName}
         </h2>
         
         {/* Timer Display */}
         <div className="text-center mb-6">
-          <div className="text-8xl font-mono font-extrabold mb-4 text-black bg-gray-100 p-6 rounded-lg shadow-inner border-2 border-gray-300">
+          <div className="text-8xl font-mono font-extrabold mb-4 text-black bg-white/40 p-6 rounded-lg shadow-inner border-2 border-white/50 backdrop-blur-md">
             {formatTime(timeLeft)}
           </div>
           
           {/* Status Text */}
-          <p className="text-gray-700 text-xl mb-4 font-semibold">
+          <p className="text-gray-900 text-xl mb-4 font-semibold">
             {statusText}
           </p>
           
@@ -281,7 +294,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
               return (
                 <span
                   key={sessionNum}
-                  className={`text-3xl ${isCompleted ? 'text-green-600' : 'text-gray-300'}`}
+                  className={`text-3xl ${isCompleted ? 'text-green-600' : 'text-gray-400'}`}
                 >
                   ●
                 </span>
@@ -304,8 +317,27 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         {/* Pokemon Selection (only during break) */}
         {isBreak && encounters.length > 0 && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
-            <h3 className="text-xl font-bold mb-3 text-center">Wild Pokémon Encounter ({encounters.length} Found)</h3>
-            <p className="text-sm text-gray-600 mb-4 text-center">Select up to 2 Pokémon to catch</p>
+            {(() => {
+              let maxSelectable = 1;
+              if (workDuration >= 40) {
+                maxSelectable = 3;
+              } else if (workDuration >= 30) {
+                maxSelectable = 2;
+              }
+              
+              return (
+                <>
+                  <h3 className="text-xl font-bold mb-3 text-center text-black">Wild Pokémon Encounter ({encounters.length} Found)</h3>
+                  <p className="text-sm text-black mb-4 text-center">Select up to {maxSelectable} Pokémon to catch</p>
+                  
+                  {caughtMonIds.length >= maxSelectable && (
+                    <div className="mb-4 p-3 bg-yellow-100 border-2 border-yellow-500 rounded-lg text-center text-yellow-800 font-semibold">
+                      You've caught the maximum {maxSelectable} Pokémon!
+                    </div>
+                  )}
+                </>
+              );
+            })()}
             
             <div className="grid grid-cols-3 gap-4 mb-4">
               {encounters.map((mon, index) => {
@@ -341,8 +373,8 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
                       style={{ imageRendering: 'pixelated', width: '48px', height: '48px' }}
                       onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
                     />
-                    <p className="font-semibold text-sm text-center">{mon.name}</p>
-                    <p className="text-xs text-gray-600 text-center">{mon.type}</p>
+                    <p className="font-semibold text-sm text-center text-black">{mon.name}</p>
+                    <p className="text-xs text-black text-center">{mon.type}</p>
                   </div>
                 );
               })}
