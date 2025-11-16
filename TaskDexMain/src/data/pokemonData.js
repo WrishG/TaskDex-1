@@ -244,7 +244,7 @@ export const POKEMON_DATA = {
     { id: 225, name: "Delibird", type: "Ice", evoStage: 1, nextEvo: null, evoExp: -1, chain: 1, rarity: 0 },
     { id: 226, name: "Mantine", type: "Water", evoStage: 1, nextEvo: null, evoExp: -1, chain: 1, rarity: 0 },
     // --- #227 - #251 ---
-    { id: 227, name: "Skarmory", type: "Steel", evoStage: 1, nextEvo: null, evoExp: -1, chain: 1, rarity: 1 },
+    { id: 227, name: "Skarmory", type: "Steel", evoStage: 1, nextEvo: null, evoExp: -1, chain: 1, rarity: 0 },
     { id: 228, name: "Houndour", type: "Dark", evoStage: 1, nextEvo: "Houndoom", evoExp: 2000, chain: 2, rarity: 0 },
     { id: 229, name: "Houndoom", type: "Dark", evoStage: 2, nextEvo: null, evoExp: -1, chain: 2, rarity: 1 },
     { id: 230, name: "Kingdra", type: "Water", evoStage: 3, nextEvo: null, evoExp: -1, chain: 3, rarity: 1 },
