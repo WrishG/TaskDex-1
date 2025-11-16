@@ -281,4 +281,3 @@ export const getRandomWildPokemon = (type) => {
   const randomIndex = Math.floor(Math.random() * wildPool.length);
   return wildPool[randomIndex];
 };
-
