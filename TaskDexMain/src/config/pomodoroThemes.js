@@ -71,7 +71,7 @@ export const POMODORO_THEMES = {
   Bug: {
     name: 'Bug',
     // Bug themed environment
-    backgroundImage: '/themes/bug.jpg',
+    backgroundImage: '/themes/Bug.jpg',
     overlay: 'rgba(65, 105, 225, 0.4)', // Blue overlay
     textColor: '#ffffff',
     accentColor: '#4169e1',
