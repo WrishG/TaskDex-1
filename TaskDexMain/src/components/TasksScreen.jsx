@@ -12,7 +12,7 @@ const style = {
 };
 
 // Task Start Modal Component
-function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor }) {
+function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor, onDelete }) {
   const [workDuration, setWorkDuration] = React.useState(30);
   const [breakDuration, setBreakDuration] = React.useState(5);
   const [numSessions, setNumSessions] = React.useState(4);
@@ -25,7 +25,7 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-xl max-w-md w-full mx-4 border-2 border-gray-300">
+        <div className="bg-white p-8 rounded-xl max-w-md w-full mx-4 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
         <h3 className="text-3xl font-bold mb-4 text-black text-center">{task.name}</h3>
         <div className="mb-4 text-center">
           <span className={`px-4 py-2 rounded-lg text-sm font-bold ${getTypeButtonColor(task.type)}`}>
@@ -86,6 +86,12 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor }) {
             Start Task
           </button>
           <button
+            className={style.button + " bg-red-600 text-white hover:bg-red-700 flex-1"}
+            onClick={() => onDelete && onDelete(task)}
+          >
+            Delete
+          </button>
+          <button
             className={style.button + " " + style.secondaryButton + " flex-1"}
             onClick={onCancel}
           >
@@ -100,6 +106,8 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor }) {
 export default function TasksScreen({ setScreen, userData, tasks, setTasks, setSessionConfig }) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [toDeleteTask, setToDeleteTask] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [taskType, setTaskType] = useState('Psychic');
   const [taskDescription, setTaskDescription] = useState('');
@@ -196,31 +204,56 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
     }
   };
 
+  const handleDeleteRequest = (task, e) => {
+    e && e.stopPropagation();
+    setToDeleteTask(task);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setToDeleteTask(null);
+    setShowDeleteConfirm(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!toDeleteTask) return;
+    const updated = (tasks || []).filter(t => t.id !== toDeleteTask.id);
+    setTasks(updated);
+    announceToScreenReader(`Task ${toDeleteTask.name} deleted`);
+    // clear selection if that task was open
+    if (selectedTask && selectedTask.id === toDeleteTask.id) setSelectedTask(null);
+    setToDeleteTask(null);
+    setShowDeleteConfirm(false);
+  };
+
   // Get a Pokémon sprite for decoration based on task type
   const getTaskSpriteUrl = (type) => {
-    // Map types to example Pokémon names
+    // Map types to example Pokémon names (present in POKEMON_DATA)
     const typeMap = {
-      'Grass': 'Bulbasaur',
-      'Fire': 'Charmander',
-      'Water': 'Squirtle',
-      'Psychic': 'Mewtwo',
-      'Ghost': 'Gastly',
-      'Electric': 'Pikachu',
+      Bug: 'Caterpie',
+      Dark: 'Umbreon',
+      Dragon: 'Dratini',
+      Electric: 'Pikachu',
+      Fighting: 'Machop',
+      Fire: 'Charmander',
+      Ghost: 'Gastly',
+      Grass: 'Bulbasaur',
+      Ground: 'Sandshrew',
+      Ice: 'Swinub',
+      Normal: 'Pidgey',
+      Poison: 'Ekans',
+      Psychic: 'Mewtwo',
+      Rock: 'Geodude',
+      Steel: 'Steelix',
+      Water: 'Squirtle',
     };
     const pokemonName = typeMap[type] || 'Pikachu';
     return getGifUrl(pokemonName);
   };
 
+  // Use all type color utilities for badges/buttons
   const getTypeButtonColor = (type) => {
-    const colors = {
-      'Grass': 'bg-green-600 text-white',
-      'Fire': 'bg-red-600 text-white',
-      'Water': 'bg-blue-600 text-white',
-      'Psychic': 'bg-pink-400 text-white',
-      'Ghost': 'bg-blue-900 text-white',
-      'Electric': 'bg-yellow-500 text-black',
-    };
-    return colors[type] || 'bg-gray-600 text-white';
+    return `${getTypeBgColor(type)} ${getTypeBorderColor(type)} text-black`;
   };
 
   const trainerName = userData?.trainerName || 'Trainer';
@@ -300,7 +333,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <span className={`px-3 py-1 rounded-lg text-sm font-bold ${getTypeButtonColor(task.type)}`}>
+                        <span className={`px-3 py-1 rounded-lg text-sm font-bold border-2 ${getTypeButtonColor(task.type)}`}>
                           {task.type}
                         </span>
                         <h3 className="text-2xl font-bold text-black">{task.name}</h3>
@@ -319,8 +352,8 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
 
       {/* Add Task Modal */}
       {showAddTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl max-w-lg w-full mx-4 border-2 border-gray-300">
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-xl max-w-lg w-full mx-4 border-2 border-gray-300 overflow-y-auto max-h-[90vh]">
             <h3 className="text-3xl font-bold mb-6 text-black">Add New Task</h3>
             
             <div className="space-y-4">
@@ -344,7 +377,7 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
                       className={`py-3 rounded-lg font-bold transition-all duration-200 border-2 ${
                         taskType === type
                           ? `${getTypeButtonColor(type)} border-black shadow-lg scale-105`
-                          : 'bg-gray-100 hover:bg-gray-200 text-black border-gray-300'
+                          : `${getTypeBgColor(type)} text-black border-gray-300 hover:scale-105` 
                       }`}
                       onClick={() => setTaskType(type)}
                     >
@@ -397,7 +430,32 @@ export default function TasksScreen({ setScreen, userData, tasks, setTasks, setS
           onStart={(workDuration, breakDuration, numSessions) => handleStartTask(selectedTask, workDuration, breakDuration, numSessions)}
           onCancel={() => setSelectedTask(null)}
           getTypeButtonColor={getTypeButtonColor}
+          onDelete={(task) => handleDeleteRequest(task)}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && toDeleteTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl max-w-md w-full mx-4 border-2 border-gray-300">
+            <h3 className="text-2xl font-bold mb-4 text-black">Confirm Delete</h3>
+            <p className="mb-6">Are you sure you want to delete the task <strong>{toDeleteTask.name}</strong>? This cannot be undone.</p>
+            <div className="flex space-x-4">
+              <button
+                className={style.button + " bg-red-600 text-white flex-1"}
+                onClick={handleDeleteConfirm}
+              >
+                Delete
+              </button>
+              <button
+                className={style.button + " " + style.secondaryButton + " flex-1"}
+                onClick={handleDeleteCancel}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
