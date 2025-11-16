@@ -87,7 +87,7 @@ export const POMODORO_THEMES = {
   Dragon: {
     name: 'Dragon',
     // Dragon themed environment
-    backgroundImage: '/themes/dragon.jpg',
+    backgroundImage: '/themes/Dragon.jpg',
     overlay: 'rgba(168, 85, 247, 0.4)', // Purple overlay
     textColor: '#ffffff',
     accentColor: '#a855f7',
@@ -119,7 +119,7 @@ export const POMODORO_THEMES = {
   Normal: {
     name: 'Normal',
     // Normal themed environment
-    backgroundImage: '/themes/normal.jpg',
+    backgroundImage: '/themes/Normal.jpg',
     overlay: 'rgba(107, 114, 128, 0.4)', // Gray overlay
     textColor: '#ffffff',
     accentColor: '#6b7280',
