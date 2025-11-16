@@ -15,7 +15,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
   const workDuration = sessionConfig?.studyTime || 30;
   const breakDuration = sessionConfig?.restTime || 5;
   const numSessions = sessionConfig?.numSessions || 4;
-  const taskName = sessionConfig?.taskName || sessionConfig?.sessionName || 'Focus Session';
+  const taskName = sessionConfig?.taskName || 'Focus Session';
   const sessionType = sessionConfig?.type || 'Fire';
   const isGroupSession = !!groupSessionData;
   
