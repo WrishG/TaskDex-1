@@ -79,7 +79,7 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor, onDelete 
         
         <div className="flex space-x-4">
           <button
-            className={style.button + " " + style.primaryButton + " flex-1"}
+            className={style.button + " bg-green-600 text-white hover:bg-green-700 flex-1"}
             onClick={handleStart}
             disabled={workDuration < 20 || breakDuration < 1 || numSessions < 1}
           >
@@ -89,7 +89,7 @@ function TaskStartModal({ task, onStart, onCancel, getTypeButtonColor, onDelete 
             className={style.button + " bg-red-600 text-white hover:bg-red-700 flex-1"}
             onClick={() => onDelete && onDelete(task)}
           >
-            Delete
+            Delete Task
           </button>
           <button
             className={style.button + " " + style.secondaryButton + " flex-1"}
