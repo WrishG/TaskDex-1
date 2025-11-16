@@ -6,7 +6,7 @@ import { getTypeHoverColor, getTypeBorderColor, getTypeBgColor, getTypeRingColor
 import { getThemeByType } from '../config/pomodoroThemes.js';
 
 const style = {
-  card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
+  card: "bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-gray-700",
   button: "px-6 py-3 rounded-xl font-bold transition-colors duration-300 shadow-md",
   secondaryButton: "bg-gray-600 text-white hover:bg-gray-700",
 };
@@ -266,26 +266,23 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         ></div>
       )}
       
-      <div className={style.card + " max-w-2xl w-full mt-12 relative z-10 bg-white/20 backdrop-blur-xl border-2 border-white/30"}>
+      <div className={style.card + " max-w-2xl w-full mt-12 relative z-10"}>
         {/* Task Name */}
         <h2 
-          className="text-4xl font-bold mb-6 text-center text-black"
-          style={{ color: 'black' }}
+          className="text-4xl font-bold mb-6 text-center text-white"
         >
           {taskName}
         </h2>
         
         {/* Timer Display */}
         <div className="text-center mb-6">
-          <div className="text-8xl font-mono font-extrabold mb-4 text-black bg-white/40 p-6 rounded-lg shadow-inner border-2 border-white/50 backdrop-blur-md">
+          <div className="text-8xl font-mono font-extrabold mb-4 text-white bg-gray-900/80 p-6 rounded-lg shadow-inner border-2 border-gray-700 backdrop-blur-md">
             {formatTime(timeLeft)}
           </div>
-          
           {/* Status Text */}
-          <p className="text-gray-900 text-xl mb-4 font-semibold">
+          <p className="text-gray-200 text-xl mb-4 font-semibold">
             {statusText}
           </p>
-          
           {/* Visual Tracker Dots */}
           <div className="flex justify-center items-center space-x-2 mb-4">
             {Array.from({ length: numSessions }, (_, i) => {
@@ -294,7 +291,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
               return (
                 <span
                   key={sessionNum}
-                  className={`text-3xl ${isCompleted ? 'text-green-600' : 'text-gray-400'}`}
+                  className={`text-3xl ${isCompleted ? 'text-green-400' : 'text-gray-600'}`}
                 >
                   ●
                 </span>
@@ -304,7 +301,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         </div>
         
         {/* Progress Bar */}
-        <div className="w-full bg-gray-300 rounded-full h-3 mb-8">
+        <div className="w-full bg-gray-700 rounded-full h-3 mb-8">
           <div 
             className="h-3 rounded-full transition-all duration-300" 
             style={{ 
@@ -316,7 +313,7 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
         
         {/* Pokemon Selection (only during break) */}
         {isBreak && encounters.length > 0 && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+          <div className="mb-6 p-4 bg-gray-900 rounded-lg border-2 border-gray-700">
             {(() => {
               let maxSelectable = 1;
               if (workDuration >= 40) {
@@ -324,21 +321,18 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
               } else if (workDuration >= 30) {
                 maxSelectable = 2;
               }
-              
               return (
                 <>
-                  <h3 className="text-xl font-bold mb-3 text-center text-black">Wild Pokémon Encounter ({encounters.length} Found)</h3>
-                  <p className="text-sm text-black mb-4 text-center">Select up to {maxSelectable} Pokémon to catch</p>
-                  
+                  <h3 className="text-xl font-bold mb-3 text-center text-white">Wild Pokémon Encounter ({encounters.length} Found)</h3>
+                  <p className="text-sm text-gray-200 mb-4 text-center">Select up to {maxSelectable} Pokémon to catch</p>
                   {caughtMonIds.length >= maxSelectable && (
-                    <div className="mb-4 p-3 bg-yellow-100 border-2 border-yellow-500 rounded-lg text-center text-yellow-800 font-semibold">
+                    <div className="mb-4 p-3 bg-yellow-900 border-2 border-yellow-500 rounded-lg text-center text-yellow-200 font-semibold">
                       You've caught the maximum {maxSelectable} Pokémon!
                     </div>
                   )}
                 </>
               );
             })()}
-            
             <div className="grid grid-cols-3 gap-4 mb-4">
               {encounters.map((mon, index) => {
                 const isSelected = selectedMonIds.includes(index);
@@ -347,16 +341,15 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
                 const typeBorderClass = getTypeBorderColor(mon.type);
                 const typeBgClass = getTypeBgColor(mon.type);
                 const typeRingClass = getTypeRingColor(mon.type);
-                
                 return (
                   <div
                     key={index}
                     className={`p-3 rounded-lg transition-all duration-200 border-2 relative ${
                       isCaught
-                        ? 'border-gray-400 bg-gray-200 opacity-60 cursor-not-allowed'
+                        ? 'border-gray-700 bg-gray-700 opacity-60 cursor-not-allowed'
                         : isSelected
                         ? `cursor-pointer ${typeBorderClass} ${typeBgClass} ring-4 ${typeRingClass}`
-                        : `cursor-pointer border-gray-300 bg-white ${typeHoverClass} hover:ring-2`
+                        : `cursor-pointer border-gray-700 bg-gray-800 ${typeHoverClass} hover:ring-2`
                     }`}
                     onClick={() => !isCaught && handleSelectMon(index)}
                   >
@@ -373,13 +366,12 @@ export default function PomodoroRunningScreen({ setScreen, sessionConfig, userDa
                       style={{ imageRendering: 'pixelated', width: '48px', height: '48px' }}
                       onError={(e) => { e.target.onerror = null; e.target.src = getGifUrl("Placeholder"); }}
                     />
-                    <p className="font-semibold text-sm text-center text-black">{mon.name}</p>
-                    <p className="text-xs text-black text-center">{mon.type}</p>
+                    <p className="font-semibold text-sm text-center text-white">{mon.name}</p>
+                    <p className="text-xs text-gray-200 text-center">{mon.type}</p>
                   </div>
                 );
               })}
             </div>
-            
             {selectedMonIds.length > 0 && (
               <button
                 className={style.button + " bg-green-600 text-white hover:bg-green-700 w-full"}
