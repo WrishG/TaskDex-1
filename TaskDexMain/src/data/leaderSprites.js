@@ -10,9 +10,9 @@ export const LEADER_SPRITES = {
   "Sabrina": `${BASE_URL}/sabrina.png`,
   "Blaine": `${BASE_URL}/blaine.png`,
   "Giovanni": `${BASE_URL}/giovanni.png`,
-  "Lorelei": `${BASE_URL}/lorelei.png`,
+  "Lorelei": `${BASE_URL}/lorelei-gen3.png`,
   "Bruno": `${BASE_URL}/bruno.png`,
-  "Agatha": `${BASE_URL}/agatha.png`,
+  "Agatha": `${BASE_URL}/agatha-gen3.png`,
   "Lance": `${BASE_URL}/lance.png`,
   "Champion Red": `${BASE_URL}/red.png`,
 };
