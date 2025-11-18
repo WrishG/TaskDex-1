@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getGifUrl } from '../utils/sprites.js';
 import { POKEMON_DATA } from '../data/pokemonData.js';
 import { getTypeHoverColor } from '../utils/typeColors.js';
+import PokemonDetailModal from './PokemonDetailModal.jsx';
+import { fetchPokemonById } from '../utils/pokeapi.js';
 
 const style = {
   card: "bg-white p-6 rounded-xl shadow-lg border-2 border-gray-300",
@@ -11,6 +13,10 @@ const style = {
 
 export default function PokedexViewScreen({ setScreen, userData }) {
   const caughtNames = new Set((userData?.pokedex || []).map(p => p.name));
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const questionMarkSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56'><rect width='56' height='56' fill='%23f3f4f6' rx='8'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='28' fill='%23343a40' font-family='Arial'>?</text></svg>`;
 
@@ -24,8 +30,26 @@ export default function PokedexViewScreen({ setScreen, userData }) {
             const caught = caughtNames.has(mon.name);
             const imgSrc = caught ? getGifUrl(mon.name) : questionMarkSvg;
             const typeHoverClass = getTypeHoverColor(mon.type);
+            const wrapperClass = `text-center p-2 bg-white rounded-lg border-2 border-gray-300 flex flex-col items-center ${typeHoverClass} hover:ring-2 transition-all ${caught ? 'cursor-pointer' : 'opacity-60'}`;
+
+            const handleClick = async () => {
+              if (!caught) return; // do not show info for uncaught ('?') entries
+              setModalOpen(true);
+              setLoading(true);
+              setError(null);
+              try {
+                const data = await fetchPokemonById(mon.id);
+                setSelectedPokemon(data);
+              } catch (err) {
+                setError(err.message || 'Failed to fetch Pokémon info');
+                setSelectedPokemon(null);
+              } finally {
+                setLoading(false);
+              }
+            };
+
             return (
-              <div key={mon.id} className={`text-center p-2 bg-white rounded-lg border-2 border-gray-300 flex flex-col items-center cursor-pointer ${typeHoverClass} hover:ring-2 transition-all`}>
+              <div key={mon.id} className={wrapperClass} onClick={handleClick}>
                 <div className="text-xs text-gray-600 w-full text-left">#{String(mon.id).padStart(3, '0')}</div>
                 <img
                   src={imgSrc}
@@ -39,6 +63,13 @@ export default function PokedexViewScreen({ setScreen, userData }) {
             );
           })}
         </div>
+        <PokemonDetailModal
+          open={modalOpen}
+          onClose={() => { setModalOpen(false); setSelectedPokemon(null); setError(null); }}
+          pokemon={selectedPokemon}
+          loading={loading}
+          error={error}
+        />
         <button
           className={style.button + " " + style.secondaryButton + " mt-8"}
           onClick={() => setScreen('MAIN_MENU')}

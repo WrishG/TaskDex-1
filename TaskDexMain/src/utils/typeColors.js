@@ -71,49 +71,49 @@ export const getTypeRingColor = (type) => {
 
 export const getTypeBorderColor = (type) => {
   const tw = {
-    Grass: 'border-green-600',
-    Fire: 'border-orange-500',
-    Water: 'border-blue-600',
-    Electric: 'border-yellow-400',
-    Psychic: 'border-pink-400',
-    Ghost: 'border-indigo-800',
-    Bug: 'border-lime-500',
-    Dark: 'border-gray-700',
-    Dragon: 'border-violet-700',
-    Fighting: 'border-red-700',
-    Ground: 'border-yellow-700',
-    Ice: 'border-cyan-200',
-    Normal: 'border-gray-400',
-    Poison: 'border-purple-500',
-    Rock: 'border-yellow-800',
-    Steel: 'border-gray-300',
+    Grass: 'border-green-700',
+    Fire: 'border-orange-700',
+    Water: 'border-blue-700',
+    Electric: 'border-yellow-600',
+    Psychic: 'border-pink-700',
+    Ghost: 'border-indigo-900',
+    Bug: 'border-lime-800',
+    Dark: 'border-gray-900',
+    Dragon: 'border-violet-800',
+    Fighting: 'border-red-900',
+    Ground: 'border-yellow-900',
+    Ice: 'border-cyan-600',
+    Normal: 'border-gray-700',
+    Poison: 'border-purple-800',
+    Rock: 'border-amber-900',
+    Steel: 'border-gray-600',
   };
   if (tw[type]) return tw[type];
-  if (typeHexColors[type]) return `border-[${typeHexColors[type]}]`;
-  return 'border-gray-400';
+  if (typeHexColors[type]) return `border-gray-800`;
+  return 'border-gray-600';
 };
 
 export const getTypeBgColor = (type) => {
   const tw = {
-    Grass: 'bg-green-100',
-    Fire: 'bg-orange-100',
-    Water: 'bg-blue-100',
-    Electric: 'bg-yellow-100',
-    Psychic: 'bg-pink-100',
-    Ghost: 'bg-indigo-100',
-    Bug: 'bg-lime-100',
-    Dark: 'bg-gray-700',
-    Dragon: 'bg-violet-100',
-    Fighting: 'bg-red-200',
-    Ground: 'bg-yellow-200',
-    Ice: 'bg-cyan-100',
-    Normal: 'bg-gray-200',
-    Poison: 'bg-purple-100',
-    Rock: 'bg-yellow-300',
-    Steel: 'bg-gray-100',
+    Grass: 'bg-green-500 text-white',
+    Fire: 'bg-orange-500 text-white',
+    Water: 'bg-blue-500 text-white',
+    Electric: 'bg-yellow-400 text-gray-900',
+    Psychic: 'bg-pink-500 text-white',
+    Ghost: 'bg-indigo-700 text-white',
+    Bug: 'bg-lime-600 text-white',
+    Dark: 'bg-gray-800 text-white',
+    Dragon: 'bg-violet-600 text-white',
+    Fighting: 'bg-red-700 text-white',
+    Ground: 'bg-yellow-700 text-white',
+    Ice: 'bg-cyan-400 text-gray-900',
+    Normal: 'bg-gray-500 text-white',
+    Poison: 'bg-purple-600 text-white',
+    Rock: 'bg-amber-700 text-white',
+    Steel: 'bg-gray-400 text-gray-900',
   };
   if (tw[type]) return tw[type];
-  if (typeHexColors[type]) return `bg-[${typeHexColors[type]}]`;
-  return 'bg-gray-100';
+  if (typeHexColors[type]) return `text-white`;
+  return 'bg-gray-500 text-white';
 };
 

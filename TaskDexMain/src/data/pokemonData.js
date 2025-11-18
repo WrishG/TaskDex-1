@@ -66,7 +66,7 @@ export const POKEMON_DATA = {
     { id: 53, name: "Persian", type: "Normal", evoStage: 2, nextEvo: null, evoExp: -1, chain: 2, rarity: 0 },
     { id: 54, name: "Psyduck", type: "Water", evoStage: 1, nextEvo: "Golduck", evoExp: 2000, chain: 2, rarity: 0 },
     { id: 55, name: "Golduck", type: "Water", evoStage: 2, nextEvo: null, evoExp: -1, chain: 2, rarity: 0 },
-    { id: 56, name: "Mankey", type: "Fighting", evoStage: 1, nextEvo: "Primeape", evoExp: 2000, chain: 2, rarity: 0 },
+    { id: 56, name: "Mankey", type: "Fighting", evoStage: 1, nextEvo: "Primeape", evoExp: 2000, chain: 2, rarity: 0, entry: "It lives in groups in the treetops. If it loses sight of its group, it becomes infuriated by its loneliness." },
     { id: 57, name: "Primeape", type: "Fighting", evoStage: 2, nextEvo: null, evoExp: -1, chain: 2, rarity: 0 },
     { id: 58, name: "Growlithe", type: "Fire", evoStage: 1, nextEvo: "Arcanine", evoExp: 2000, chain: 2, rarity: 0 },
     { id: 59, name: "Arcanine", type: "Fire", evoStage: 2, nextEvo: null, evoExp: -1, chain: 2, rarity: 1 },
