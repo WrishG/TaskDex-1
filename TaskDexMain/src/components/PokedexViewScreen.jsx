@@ -25,7 +25,7 @@ export default function PokedexViewScreen({ setScreen, userData }) {
       <div className={style.card + " max-w-6xl w-full text-center"}>
         <h2 className="text-3xl font-bold mb-6 text-black">Pokédex</h2>
         <h3 className="text-xl font-semibold mb-4 text-black">Registered Species ({userData?.pokedex.length || 0}) — Showing 1–251</h3>
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-3 max-h-[70vh] overflow-y-auto p-4 bg-gray-100 rounded-lg mx-auto border-2 border-gray-300">
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-3 p-4 bg-gray-100 rounded-lg mx-auto border-2 border-gray-300">
           {POKEMON_DATA.list.map(mon => {
             const caught = caughtNames.has(mon.name);
             const imgSrc = caught ? getGifUrl(mon.name) : questionMarkSvg;

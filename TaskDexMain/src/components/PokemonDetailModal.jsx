@@ -82,15 +82,7 @@ export default function PokemonDetailModal({ open, onClose, pokemon, loading, er
               {/* Type and Rarity - separate lines */}
               {localEntry && (
                 <div className="text-xs text-gray-700 space-y-0.5">
-                  <div>
-                    <span 
-                      className={`inline-block px-2 py-1 rounded text-xs font-semibold border capitalize ${getTypeBgColor(
-                        localEntry.type
-                      )} ${getTypeBorderColor(localEntry.type)}`}
-                    >
-                      {localEntry.type}
-                    </span>
-                  </div>
+
                   <div>Rarity: <span className="font-semibold">{localEntry.rarity === 1 ? 'Rare' : 'Common'}</span></div>
                 </div>
               )}
